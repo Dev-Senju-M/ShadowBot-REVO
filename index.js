@@ -22,8 +22,9 @@ for (const file of commandFiles) {
 
 // Cargar eventos
 require('./events/welcome')(client);
+require('./events/verify')(client);
 
-client.once('ready', () => {
+client.once('clientReady', () => {
   console.log(`✅ ShadowBot listo como ${client.user.tag}`);
 });
 
