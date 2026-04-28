@@ -1,0 +1,10 @@
+{
+  "welcomeChannel": null,
+  "goodbyeChannel": null,
+  "rulesChannel": null,
+  "autoRole": null,
+  "welcomeColor": "#57F287",
+  "goodbyeColor": "#ED4245",
+  "welcomeMessage": "¡Bienvenido/a al servidor, {user}! 🎉",
+  "goodbyeMessage": "**{tag}** ha abandonado el servidor. ¡Hasta pronto!"
+}
