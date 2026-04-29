@@ -36,19 +36,16 @@ async function updateTwitchStats(client) {
       { headers }
     );
     const seguidores = followRes.data.total ?? 0;
-
-    for (const guild of client.guilds.cache.values()) {
-      // Buscar o crear categoría
-      let categoria = guild.channels.cache.find(
-        c => c.name === '📊 Estadísticas' && c.type === 4
-      );
-
-      if (!categoria) continue;
-
     const nombreCanal = `🟣 Twitch: ${seguidores.toLocaleString()}`;
 
+    for (const guild of client.guilds.cache.values()) {
+      const categoria = guild.channels.cache.find(
+        c => c.name === '📊 Estadísticas' && c.type === 4
+      );
+      if (!categoria) continue;
+
       const canalExistente = guild.channels.cache.find(
-        c => c.parent?.id === categoria.id && c.type === 2 && c.topic === 'stat-twitch'
+        c => c.parent?.id === categoria.id && c.type === 2 && c.name.startsWith('🟣 Twitch:')
       );
 
       if (canalExistente) {
@@ -60,7 +57,6 @@ async function updateTwitchStats(client) {
           name: nombreCanal,
           type: 2,
           parent: categoria.id,
-          topic: 'stat-twitch',
           permissionOverwrites: [{ id: guild.id, deny: ['Connect'] }]
         }).catch(console.error);
       }
@@ -74,14 +70,10 @@ async function updateTwitchStats(client) {
 module.exports = (client) => {
   client.once('clientReady', async () => {
     await refreshToken();
-
-    // Actualizar stats de Twitch al iniciar
     await updateTwitchStats(client);
 
-    // Actualizar cada 10 minutos
     setInterval(() => updateTwitchStats(client), 10 * 60 * 1000);
 
-    // Notificación de stream en vivo cada 3 minutos
     setInterval(async () => {
       try {
         const headers = {

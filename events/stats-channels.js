@@ -1,7 +1,5 @@
 module.exports = (client) => {
 
-  const STATS_CATEGORY_NAME = '📊 Estadísticas';
-
   async function updateStats(guild) {
     await guild.members.fetch();
 
@@ -23,28 +21,24 @@ module.exports = (client) => {
     }
 
     const canales = [
-      { key: 'stat-members', nombre: `👥 Miembros: ${totalMembers}` },
-      { key: 'stat-humans',  nombre: `🧑 Humanos: ${humanos}` },
-      { key: 'stat-bots',    nombre: `🤖 Bots: ${bots}` },
-      { key: 'stat-boost',   nombre: `🚀 Boosters: ${boosters}` },
+      { prefijo: '👥 Miembros:', nombre: `👥 Miembros: ${totalMembers}` },
+      { prefijo: '🧑 Humanos:',  nombre: `🧑 Humanos: ${humanos}` },
+      { prefijo: '🤖 Bots:',     nombre: `🤖 Bots: ${bots}` },
+      { prefijo: '🚀 Boosters:', nombre: `🚀 Boosters: ${boosters}` },
     ];
 
-    for (const { key, nombre } of canales) {
-      // Buscar por key en el topic del canal
+    for (const { prefijo, nombre } of canales) {
       const existente = guild.channels.cache.find(
-        c => c.parent?.id === categoria.id && c.type === 2 && c.topic === key
+        c => c.parent?.id === categoria.id && c.type === 2 && c.name.startsWith(prefijo)
       );
 
       if (existente) {
-        if (existente.name !== nombre) {
-          await existente.setName(nombre).catch(console.error);
-        }
+        if (existente.name !== nombre) await existente.setName(nombre).catch(console.error);
       } else {
         await guild.channels.create({
           name: nombre,
           type: 2,
           parent: categoria.id,
-          topic: key,
           permissionOverwrites: [{ id: guild.id, deny: ['Connect'] }]
         }).catch(console.error);
       }
@@ -55,8 +49,6 @@ module.exports = (client) => {
     for (const guild of client.guilds.cache.values()) {
       await updateStats(guild).catch(console.error);
     }
-
-    // Actualizar cada 10 minutos
     setInterval(async () => {
       for (const guild of client.guilds.cache.values()) {
         await updateStats(guild).catch(console.error);
@@ -64,8 +56,6 @@ module.exports = (client) => {
     }, 10 * 60 * 1000);
   });
 
-  // Actualizar cuando alguien entra o sale
   client.on('guildMemberAdd', (member) => updateStats(member.guild).catch(console.error));
   client.on('guildMemberRemove', (member) => updateStats(member.guild).catch(console.error));
-  client.on('guildMemberUpdate', (_, member) => updateStats(member.guild).catch(console.error));
 };
