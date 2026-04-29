@@ -48,7 +48,7 @@ async function updateTwitchStats(client) {
     const nombreCanal = `🟣 Twitch: ${seguidores.toLocaleString()}`;
 
       const canalExistente = guild.channels.cache.find(
-        c => c.parent?.id === categoria.id && c.name.includes('Seguidores:') && c.name.includes('Twitch')
+        c => c.parent?.id === categoria.id && c.type === 2 && c.topic === 'stat-twitch'
       );
 
       if (canalExistente) {
@@ -60,9 +60,8 @@ async function updateTwitchStats(client) {
           name: nombreCanal,
           type: 2,
           parent: categoria.id,
-          permissionOverwrites: [
-            { id: guild.id, deny: ['Connect'] }
-          ]
+          topic: 'stat-twitch',
+          permissionOverwrites: [{ id: guild.id, deny: ['Connect'] }]
         }).catch(console.error);
       }
     }

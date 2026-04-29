@@ -10,52 +10,42 @@ module.exports = (client) => {
     const humanos = totalMembers - bots;
     const boosters = guild.premiumSubscriptionCount || 0;
 
-    // Buscar o crear categoría
     let categoria = guild.channels.cache.find(
-      c => c.name === STATS_CATEGORY_NAME && c.type === 4
+      c => c.name === '📊 Estadísticas' && c.type === 4
     );
 
     if (!categoria) {
       categoria = await guild.channels.create({
-        name: STATS_CATEGORY_NAME,
+        name: '📊 Estadísticas',
         type: 4,
-        permissionOverwrites: [
-          {
-            id: guild.id,
-            deny: ['Connect'],
-          }
-        ]
+        permissionOverwrites: [{ id: guild.id, deny: ['Connect'] }]
       });
     }
 
     const canales = [
-      { key: 'stat_members', nombre: `👥 Miembros: ${totalMembers}` },
-      { key: 'stat_humans',  nombre: `🧑 Humanos: ${humanos}` },
-      { key: 'stat_bots',    nombre: `🤖 Bots: ${bots}` },
-      { key: 'stat_boost',   nombre: `🚀 Boosters: ${boosters}` },
+      { key: 'stat-members', nombre: `👥 Miembros: ${totalMembers}` },
+      { key: 'stat-humans',  nombre: `🧑 Humanos: ${humanos}` },
+      { key: 'stat-bots',    nombre: `🤖 Bots: ${bots}` },
+      { key: 'stat-boost',   nombre: `🚀 Boosters: ${boosters}` },
     ];
 
-    for (const canal of canales) {
-      const existente = guild.channels.cache.find(c => c.name.startsWith(canal.key.replace('stat_', '')));
-      const match = guild.channels.cache.find(
-        c => c.parent?.id === categoria.id && c.name.includes(canal.nombre.split(':')[0])
+    for (const { key, nombre } of canales) {
+      // Buscar por key en el topic del canal
+      const existente = guild.channels.cache.find(
+        c => c.parent?.id === categoria.id && c.type === 2 && c.topic === key
       );
 
-      if (match) {
-        if (match.name !== canal.nombre) {
-          await match.setName(canal.nombre).catch(console.error);
+      if (existente) {
+        if (existente.name !== nombre) {
+          await existente.setName(nombre).catch(console.error);
         }
       } else {
         await guild.channels.create({
-          name: canal.nombre,
+          name: nombre,
           type: 2,
           parent: categoria.id,
-          permissionOverwrites: [
-            {
-              id: guild.id,
-              deny: ['Connect'],
-            }
-          ]
+          topic: key,
+          permissionOverwrites: [{ id: guild.id, deny: ['Connect'] }]
         }).catch(console.error);
       }
     }
