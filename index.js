@@ -39,6 +39,7 @@ require('./events/welcome')(client);
 require('./events/verify')(client);
 require('./events/music')(client, player);
 require('./events/stats-channels')(client);
+require('./events/autorespuesta')(client);
 
 client.once('clientReady', () => {
   console.log(`✅ ShadowBot listo como ${client.user.tag}`);
