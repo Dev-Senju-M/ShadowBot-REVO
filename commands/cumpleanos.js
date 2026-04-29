@@ -14,7 +14,9 @@ module.exports = {
         .addIntegerOption(opt =>
           opt.setName('day').setDescription('Day (1-31)').setRequired(true))
         .addIntegerOption(opt =>
-          opt.setName('month').setDescription('Month (1-12)').setRequired(true)))
+          opt.setName('month').setDescription('Month (1-12)').setRequired(true))
+        .addIntegerOption(opt =>
+          opt.setName('year').setDescription('Year (ex: 2000)').setRequired(true)))
     .addSubcommand(sub =>
       sub.setName('view')
         .setDescription('View your registered birthday'))
@@ -35,20 +37,27 @@ module.exports = {
     if (sub === 'register') {
       const dia = interaction.options.getInteger('day');
       const mes = interaction.options.getInteger('month');
+      const anio = interaction.options.getInteger('year');
+      const ahora = new Date();
 
       if (dia < 1 || dia > 31) return interaction.reply({ content: '❌ Invalid day (1-31).', ephemeral: true });
       if (mes < 1 || mes > 12) return interaction.reply({ content: '❌ Invalid month (1-12).', ephemeral: true });
+      if (anio < 1900 || anio > ahora.getFullYear()) return interaction.reply({ content: `❌ Invalid year (1900-${ahora.getFullYear()}).`, ephemeral: true });
 
-      db.usuarios[interaction.user.id] = { dia, mes, tag: interaction.user.tag };
+      // Calcular edad actual
+      const edad = calcularEdad(dia, mes, anio);
+
+      db.usuarios[interaction.user.id] = { dia, mes, anio, tag: interaction.user.tag };
       fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
 
       const embed = new EmbedBuilder()
         .setColor('#9B59B6')
         .setTitle('🎂 Birthday registered!')
-        .setDescription(`Your birthday has been saved in the Sanctuary. The bot will celebrate you that day. 🌑`)
+        .setDescription(`Your birthday has been saved in the Sanctuary. 🌑`)
         .addFields(
-          { name: '📅 Date', value: `**${meses[mes-1]} ${dia}**`, inline: true },
-          { name: '👤 User', value: interaction.user.tag, inline: true },
+          { name: '📅 Date', value: `**${meses[mes-1]} ${dia}, ${anio}**`, inline: true },
+          { name: '🎂 Current Age', value: `**${edad} years old**`, inline: true },
+          { name: '👤 User', value: interaction.user.tag, inline: false },
         )
         .setFooter({ text: 'Santuario Mocho 🌑' })
         .setTimestamp();
@@ -59,10 +68,17 @@ module.exports = {
       const data = db.usuarios[interaction.user.id];
       if (!data) return interaction.reply({ content: '❌ You have no birthday registered. Use `/birthday register`.', ephemeral: true });
 
+      const edad = calcularEdad(data.dia, data.mes, data.anio);
+      const proxCumple = proximoCumple(data.dia, data.mes);
+
       const embed = new EmbedBuilder()
         .setColor('#9B59B6')
         .setTitle('🎂 Your Birthday')
-        .setDescription(`**${meses[data.mes-1]} ${data.dia}**`)
+        .addFields(
+          { name: '📅 Date', value: `**${meses[data.mes-1]} ${data.dia}, ${data.anio}**`, inline: true },
+          { name: '🎂 Age', value: `**${edad} years old**`, inline: true },
+          { name: '⏳ Next Birthday', value: proxCumple, inline: false },
+        )
         .setFooter({ text: 'Santuario Mocho 🌑' })
         .setTimestamp();
 
@@ -77,9 +93,10 @@ module.exports = {
         return a[1].dia - b[1].dia;
       });
 
-      const lista = sorted.map(([id, data]) =>
-        `🎂 **${meses[data.mes-1]} ${data.dia}** — <@${id}>`
-      ).join('\n');
+      const lista = sorted.map(([id, data]) => {
+        const edad = calcularEdad(data.dia, data.mes, data.anio);
+        return `🎂 **${meses[data.mes-1]} ${data.dia}** — <@${id}> *(${edad} years old)*`;
+      }).join('\n');
 
       const embed = new EmbedBuilder()
         .setColor('#9B59B6')
@@ -112,3 +129,22 @@ module.exports = {
     }
   }
 };
+
+function calcularEdad(dia, mes, anio) {
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - anio;
+  const mesTodo = hoy.getMonth() + 1;
+  if (mesTodo < mes || (mesTodo === mes && hoy.getDate() < dia)) {
+    edad--;
+  }
+  return edad;
+}
+
+function proximoCumple(dia, mes) {
+  const hoy = new Date();
+  const anioActual = hoy.getFullYear();
+  let proxFecha = new Date(anioActual, mes - 1, dia);
+  if (proxFecha <= hoy) proxFecha = new Date(anioActual + 1, mes - 1, dia);
+  const diff = Math.ceil((proxFecha - hoy) / (1000 * 60 * 60 * 24));
+  return diff === 0 ? '🎉 **¡Hoy es tu cumpleaños!**' : `**${diff} days away** <t:${Math.floor(proxFecha.getTime()/1000)}:D>`;
+}

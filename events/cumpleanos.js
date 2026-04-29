@@ -44,7 +44,7 @@ module.exports = (client) => {
           const embed = new EmbedBuilder()
             .setColor('#9B59B6')
             .setTitle('🎂 ¡Feliz Cumpleaños!')
-            .setDescription(`### ¡Hoy es el cumpleaños de <@${userId}>! 🎉\n\n${frase}`)
+            .setDescription(`### ¡Hoy es el cumpleaños de <@${userId}>! 🎉\n🎂 **¡Hoy cumple ${data.anio ? new Date().getFullYear() - data.anio : '?'} años!**\n\n${frase}`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
             .setFooter({ text: 'Santuario Mocho 🌑' })
             .setTimestamp();
