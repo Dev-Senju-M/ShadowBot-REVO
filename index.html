@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ShadowBot — Santuario Mocho</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --void: #030305;
+      --abyss: #08080f;
+      --shadow: #0e0e1a;
+      --dusk: #16162a;
+      --mist: #1e1e35;
+      --phantom: #9b59b6;
+      --specter: #7d3c98;
+      --wraith: #c39bd3;
+      --moonlight: #e8d5f0;
+      --bone: #f0ece8;
+      --blood: #c0392b;
+      --ember: #e74c3c;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--void);
+      color: var(--moonlight);
+      font-family: 'Crimson Pro', Georgia, serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--phantom);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+      mix-blend-mode: screen;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(155,89,182,0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* Stars */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--d) ease-in-out infinite alternate;
+    }
+    @keyframes twinkle {
+      from { opacity: 0.1; transform: scale(1); }
+      to   { opacity: 0.8; transform: scale(1.4); }
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.5rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(3,3,5,0.95), transparent);
+      backdrop-filter: blur(2px);
+    }
+    .nav-logo {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--wraith);
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: rgba(227,213,240,0.5);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+      font-family: 'Space Mono', monospace;
+    }
+    .nav-links a:hover { color: var(--wraith); }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      overflow: hidden;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(155,89,182,0.15) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.6; transform: translate(-50%,-50%) scale(1); }
+      50%       { opacity: 1;   transform: translate(-50%,-50%) scale(1.15); }
+    }
+
+    .hero-sigil {
+      position: relative;
+      width: 120px; height: 120px;
+      margin-bottom: 2.5rem;
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-16px); }
+    }
+    .hero-sigil svg {
+      width: 100%; height: 100%;
+      filter: drop-shadow(0 0 20px rgba(155,89,182,0.6));
+    }
+
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--phantom);
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fade-up 1s 0.3s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--bone) 0%, var(--wraith) 40%, var(--phantom) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.3em;
+      opacity: 0;
+      animation: fade-up 1s 0.5s forwards;
+    }
+
+    .hero-sub {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(0.9rem, 2vw, 1.3rem);
+      font-weight: 400;
+      color: var(--specter);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fade-up 1s 0.7s forwards;
+    }
+
+    .hero-desc {
+      max-width: 580px;
+      font-size: 1.25rem;
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(227,213,240,0.65);
+      line-height: 1.8;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fade-up 1s 0.9s forwards;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fade-up 1s 1.1s forwards;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem 2.5rem;
+      background: var(--phantom);
+      color: white;
+      text-decoration: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.3s;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--specter), var(--phantom));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(155,89,182,0.4); }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem 2.5rem;
+      border: 1px solid rgba(155,89,182,0.3);
+      color: var(--wraith);
+      text-decoration: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: border-color 0.3s, background 0.3s, transform 0.2s;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    }
+    .btn-ghost:hover {
+      border-color: var(--phantom);
+      background: rgba(155,89,182,0.1);
+      transform: translateY(-3px);
+    }
+
+    /* SCROLL INDICATOR */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.4;
+      animation: fade-up 1s 1.5s forwards;
+    }
+    .scroll-hint span {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px; height: 50px;
+      background: linear-gradient(to bottom, var(--phantom), transparent);
+      animation: scroll-line 2s ease-in-out infinite;
+    }
+    @keyframes scroll-line {
+      0%   { transform: scaleY(0); transform-origin: top; }
+      50%  { transform: scaleY(1); transform-origin: top; }
+      51%  { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; }
+    }
+
+    /* DIVIDER */
+    .rune-divider {
+      text-align: center;
+      padding: 3rem 0;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.5em;
+      color: rgba(155,89,182,0.3);
+    }
+
+    /* FEATURES */
+    .features {
+      position: relative;
+      padding: 6rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--phantom);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+    .section-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      text-align: center;
+      color: var(--moonlight);
+      margin-bottom: 1rem;
+    }
+    .section-desc {
+      text-align: center;
+      color: rgba(227,213,240,0.5);
+      font-size: 1.1rem;
+      font-style: italic;
+      max-width: 500px;
+      margin: 0 auto 4rem;
+      line-height: 1.7;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5px;
+      background: rgba(155,89,182,0.08);
+      border: 1px solid rgba(155,89,182,0.08);
+    }
+
+    .feature-card {
+      background: var(--abyss);
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--phantom), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .feature-card:hover { background: var(--shadow); }
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1.2rem;
+      display: block;
+      filter: grayscale(0.3);
+    }
+    .feature-name {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 1rem;
+      color: var(--wraith);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+    }
+    .feature-desc {
+      font-size: 1rem;
+      color: rgba(227,213,240,0.45);
+      line-height: 1.7;
+      font-style: italic;
+    }
+    .feature-tag {
+      display: inline-block;
+      margin-top: 1.2rem;
+      padding: 0.2rem 0.75rem;
+      background: rgba(155,89,182,0.1);
+      border: 1px solid rgba(155,89,182,0.2);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--phantom);
+      text-transform: uppercase;
+    }
+
+    /* COMMANDS */
+    .commands {
+      padding: 6rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .cmd-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 3rem;
+    }
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.2rem 2rem;
+      background: var(--abyss);
+      border-left: 2px solid transparent;
+      transition: border-color 0.3s, background 0.3s, transform 0.2s;
+      cursor: default;
+    }
+    .cmd-item:hover {
+      border-left-color: var(--phantom);
+      background: var(--shadow);
+      transform: translateX(6px);
+    }
+    .cmd-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--phantom);
+      min-width: 200px;
+    }
+    .cmd-desc {
+      font-size: 1rem;
+      color: rgba(227,213,240,0.45);
+      font-style: italic;
+    }
+    .cmd-badge {
+      margin-left: auto;
+      padding: 0.15rem 0.6rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid;
+    }
+    .badge-mod  { color: #e74c3c; border-color: rgba(231,76,60,0.3); background: rgba(231,76,60,0.05); }
+    .badge-music{ color: #27ae60; border-color: rgba(39,174,96,0.3); background: rgba(39,174,96,0.05); }
+    .badge-info { color: var(--phantom); border-color: rgba(155,89,182,0.3); background: rgba(155,89,182,0.05); }
+    .badge-admin{ color: #f39c12; border-color: rgba(243,156,18,0.3); background: rgba(243,156,18,0.05); }
+
+    /* STATS */
+    .stats-section {
+      padding: 6rem 2rem;
+      background: var(--abyss);
+      position: relative;
+      overflow: hidden;
+    }
+    .stats-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--phantom), transparent);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 3rem;
+      max-width: 800px;
+      margin: 3rem auto 0;
+      text-align: center;
+    }
+    .stat-number {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--wraith);
+      display: block;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(227,213,240,0.3);
+    }
+
+    /* INVITE */
+    .invite {
+      padding: 8rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+    .invite-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(155,89,182,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .invite-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      color: var(--moonlight);
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .invite-sub {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: rgba(227,213,240,0.45);
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 3rem 4rem;
+      border-top: 1px solid rgba(155,89,182,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-logo {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 0.9rem;
+      color: rgba(227,213,240,0.3);
+    }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .footer-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(227,213,240,0.25);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--wraith); }
+    .footer-copy {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: rgba(227,213,240,0.15);
+      letter-spacing: 0.1em;
+    }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursor-ring"></div>
+
+  <!-- Stars -->
+  <div class="stars" id="stars"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">🌑 ShadowBot</a>
+    <ul class="nav-links">
+      <li><a href="#features">Poderes</a></li>
+      <li><a href="#commands">Comandos</a></li>
+      <li><a href="#invite">Invocar</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+
+    <div class="hero-sigil">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" stroke="rgba(155,89,182,0.3)" stroke-width="1"/>
+        <circle cx="50" cy="50" r="35" stroke="rgba(155,89,182,0.2)" stroke-width="0.5"/>
+        <polygon points="50,8 61,35 90,35 67,54 76,81 50,63 24,81 33,54 10,35 39,35" fill="rgba(155,89,182,0.15)" stroke="rgba(195,155,211,0.6)" stroke-width="1"/>
+        <circle cx="50" cy="50" r="8" fill="var(--phantom)" opacity="0.8"/>
+        <circle cx="50" cy="50" r="4" fill="var(--wraith)"/>
+      </svg>
+    </div>
+
+    <p class="hero-eyebrow">✦ Guardián del Santuario Mocho ✦</p>
+    <h1 class="hero-title">ShadowBot</h1>
+    <p class="hero-sub">donde las sombras obedecen</p>
+    <p class="hero-desc">
+      Un espíritu digital que vela por el Santuario. Modera, da la bienvenida,
+      reproduce música y observa cada rincón del servidor.
+    </p>
+    <div class="hero-actions">
+      <a href="https://discord.com/oauth2/authorize?client_id=1400517299181715640&permissions=8&integration_type=0&scope=bot+applications.commands" class="btn-primary" target="_blank">
+        <span>⚡ Invocar al Bot</span>
+      </a>
+      <a href="https://github.com/NET-Jason/ShadowBot-REVO" class="btn-ghost" target="_blank">
+        <span>☽ Ver Código</span>
+      </a>
+    </div>
+
+    <div class="scroll-hint">
+      <span>Descender</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <div class="rune-divider">✦ &nbsp; ✦ &nbsp; ✦ &nbsp; ✦ &nbsp; ✦</div>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <p class="section-label reveal">Sus poderes</p>
+    <h2 class="section-title reveal">Lo que Domina</h2>
+    <p class="section-desc reveal">Cada habilidad forjada en la oscuridad del Santuario.</p>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <span class="feature-icon">👋</span>
+        <p class="feature-name">Bienvenida & Despedida</p>
+        <p class="feature-desc">Recibe a cada alma que llega al Santuario con un mensaje personalizado. Despide a los que parten con solemnidad.</p>
+        <span class="feature-tag">Auto</span>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🛡️</span>
+        <p class="feature-name">Moderación</p>
+        <p class="feature-desc">Ban, kick, mute y limpieza de mensajes. El orden en el Santuario se mantiene con mano firme.</p>
+        <span class="feature-tag">Admin</span>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">📊</span>
+        <p class="feature-name">Estadísticas</p>
+        <p class="feature-desc">Canales de voz que se actualizan en tiempo real mostrando miembros, bots, boosters y seguidores de Twitch.</p>
+        <span class="feature-tag">Live</span>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🎵</span>
+        <p class="feature-name">Música</p>
+        <p class="feature-desc">Reproduce canciones con un panel de control visual. Cola, loop, volumen y más, todo desde Discord.</p>
+        <span class="feature-tag">Beta</span>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🔴</span>
+        <p class="feature-name">Twitch Live</p>
+        <p class="feature-desc">Notifica automáticamente cuando el canal va en vivo. Muestra viewers, juego y stats del canal.</p>
+        <span class="feature-tag">Auto</span>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🤖</span>
+        <p class="feature-name">Auto-Respuestas</p>
+        <p class="feature-desc">Triggers personalizados que los admins crean desde Discord. El bot responde a palabras clave en tiempo real.</p>
+        <span class="feature-tag">Custom</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="rune-divider">✦ &nbsp; ✦ &nbsp; ✦ &nbsp; ✦ &nbsp; ✦</div>
+
+  <!-- COMMANDS -->
+  <section class="commands" id="commands">
+    <p class="section-label reveal">Grimorio</p>
+    <h2 class="section-title reveal">Comandos</h2>
+    <p class="section-desc reveal">Los hechizos disponibles para invocar al Guardián.</p>
+
+    <div class="cmd-list">
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/ban</span>
+        <span class="cmd-desc">Destierra a un usuario del Santuario</span>
+        <span class="cmd-badge badge-mod">Mod</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/kick</span>
+        <span class="cmd-desc">Expulsa a un usuario temporalmente</span>
+        <span class="cmd-badge badge-mod">Mod</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/mute</span>
+        <span class="cmd-desc">Silencia a un usuario por X minutos</span>
+        <span class="cmd-badge badge-mod">Mod</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/clear</span>
+        <span class="cmd-desc">Borra mensajes en masa del canal</span>
+        <span class="cmd-badge badge-mod">Mod</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/play</span>
+        <span class="cmd-desc">Reproduce una canción o playlist</span>
+        <span class="cmd-badge badge-music">Música</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/queue</span>
+        <span class="cmd-desc">Muestra la cola de canciones actual</span>
+        <span class="cmd-badge badge-music">Música</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/stats</span>
+        <span class="cmd-desc">Estadísticas completas del servidor</span>
+        <span class="cmd-badge badge-info">Info</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/twitch</span>
+        <span class="cmd-desc">Stats en vivo del canal de Twitch</span>
+        <span class="cmd-badge badge-info">Info</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/autorespuesta</span>
+        <span class="cmd-desc">Crea, elimina y lista triggers automáticos</span>
+        <span class="cmd-badge badge-admin">Admin</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/setup-welcome</span>
+        <span class="cmd-desc">Configura el sistema de bienvenida</span>
+        <span class="cmd-badge badge-admin">Admin</span>
+      </div>
+      <div class="cmd-item reveal">
+        <span class="cmd-name">/setup-rules</span>
+        <span class="cmd-desc">Publica el canal de reglas completo</span>
+        <span class="cmd-badge badge-admin">Admin</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-section">
+    <p class="section-label reveal">El Santuario en números</p>
+    <h2 class="section-title reveal">Presencia</h2>
+    <div class="stats-grid">
+      <div class="reveal">
+        <span class="stat-number">11+</span>
+        <span class="stat-label">Comandos Slash</span>
+      </div>
+      <div class="reveal">
+        <span class="stat-number">24/7</span>
+        <span class="stat-label">Siempre Activo</span>
+      </div>
+      <div class="reveal">
+        <span class="stat-number">∞</span>
+        <span class="stat-label">Auto-Respuestas</span>
+      </div>
+      <div class="reveal">
+        <span class="stat-number">🌑</span>
+        <span class="stat-label">Santuario Mocho</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVITE -->
+  <section class="invite" id="invite">
+    <div class="invite-glow"></div>
+    <h2 class="invite-title reveal">¿Listo para invocar<br>al Guardián?</h2>
+    <p class="invite-sub reveal">El Santuario te espera con las sombras abiertas.</p>
+    <div class="reveal">
+      <a href="https://discord.com/oauth2/authorize?client_id=1400517299181715640&permissions=8&integration_type=0&scope=bot+applications.commands"
+         class="btn-primary" target="_blank" style="font-size:1rem; padding:1.2rem 3rem;">
+        <span>⚡ Agregar a mi Servidor</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-logo">🌑 ShadowBot REVO</span>
+    <ul class="footer-links">
+      <li><a href="https://github.com/NET-Jason/ShadowBot-REVO" target="_blank">GitHub</a></li>
+      <li><a href="https://www.twitch.tv/dannmochi" target="_blank">Twitch</a></li>
+      <li><a href="https://www.tiktok.com/@dannnmochi" target="_blank">TikTok</a></li>
+      <li><a href="https://www.instagram.com/dannnmochi/" target="_blank">Instagram</a></li>
+    </ul>
+    <span class="footer-copy">© 2026 Santuario Mocho — Todos los derechos reservados</span>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+      setTimeout(() => {
+        ring.style.left = e.clientX + 'px';
+        ring.style.top  = e.clientY + 'px';
+      }, 80);
+    });
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '20px';
+        cursor.style.height = '20px';
+        cursor.style.background = 'var(--wraith)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '12px';
+        cursor.style.height = '12px';
+        cursor.style.background = 'var(--phantom)';
+      });
+    });
+
+    // Stars
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 120; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2 + 0.5;
+      s.style.cssText = `
+        width:${size}px; height:${size}px;
+        top:${Math.random()*100}%;
+        left:${Math.random()*100}%;
+        --d:${2 + Math.random()*4}s;
+        animation-delay:${Math.random()*4}s;
+      `;
+      starsEl.appendChild(s);
+    }
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(r => observer.observe(r));
+  </script>
+</body>
+</html>
