@@ -45,7 +45,7 @@ async function updateTwitchStats(client) {
 
       if (!categoria) continue;
 
-    const nombreCanal = `🟣 Seguidores: ${seguidores.toLocaleString()}`;
+    const nombreCanal = `🟣 Twitch: ${seguidores.toLocaleString()}`;
 
       const canalExistente = guild.channels.cache.find(
         c => c.parent?.id === categoria.id && c.name.includes('Seguidores:') && c.name.includes('Twitch')
