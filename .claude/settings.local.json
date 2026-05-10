@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem *)",
+      "Bash(npm install *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); pkgs=d.get\\('packages',{}\\); print\\('@emnapi/core' in str\\(pkgs\\), '@emnapi/runtime' in str\\(pkgs\\)\\)\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\('package-lock.json'\\)\\); pkgs=d.get\\('packages',{}\\); emnapi=[k for k in pkgs if 'emnapi' in k]; print\\('\\\\n'.join\\(emnapi\\)\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}
