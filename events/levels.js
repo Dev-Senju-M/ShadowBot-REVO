@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const { sendModLog } = require('../modlog');
 
 const dbPath = path.join(__dirname, '../levels.json');
 function getDB() { return JSON.parse(fs.readFileSync(dbPath, 'utf8')); }
@@ -235,6 +236,44 @@ module.exports = (client) => {
     if (!userId || newState.member?.user.bot) return;
 
     const guild = newState.guild || oldState.guild;
+    const member = newState.member || oldState.member;
+
+    // Log de voz
+    if (!oldState.channelId && newState.channelId) {
+      await sendModLog(guild, new EmbedBuilder()
+        .setColor('#57F287')
+        .setTitle('🔊 Entró a canal de voz')
+        .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 64 }))
+        .addFields(
+          { name: '👤 Usuario', value: `${member.user.tag} (<@${userId}>)`, inline: true },
+          { name: '📢 Canal', value: `${newState.channel.name}`, inline: true },
+        )
+        .setFooter({ text: `ID: ${userId}` })
+        .setTimestamp());
+    } else if (oldState.channelId && !newState.channelId) {
+      await sendModLog(guild, new EmbedBuilder()
+        .setColor('#ED4245')
+        .setTitle('🔇 Salió de canal de voz')
+        .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 64 }))
+        .addFields(
+          { name: '👤 Usuario', value: `${member.user.tag} (<@${userId}>)`, inline: true },
+          { name: '📢 Canal', value: `${oldState.channel.name}`, inline: true },
+        )
+        .setFooter({ text: `ID: ${userId}` })
+        .setTimestamp());
+    } else if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+      await sendModLog(guild, new EmbedBuilder()
+        .setColor('#5865F2')
+        .setTitle('🔀 Cambió de canal de voz')
+        .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 64 }))
+        .addFields(
+          { name: '👤 Usuario', value: `${member.user.tag} (<@${userId}>)`, inline: false },
+          { name: '📤 Salió de', value: `${oldState.channel.name}`, inline: true },
+          { name: '📥 Entró a', value: `${newState.channel.name}`, inline: true },
+        )
+        .setFooter({ text: `ID: ${userId}` })
+        .setTimestamp());
+    }
 
     // Entró a canal
     if (!oldState.channelId && newState.channelId) {
