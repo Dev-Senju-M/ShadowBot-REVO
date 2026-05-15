@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const fs = require('fs');
+const http = require('http');
 
 const client = new Client({
   intents: [
@@ -45,8 +46,35 @@ require('./events/cumpleanos')(client);
 require('./events/levels')(client);
 require('./events/prefix-commands')(client);
 
+let botReady = false;
+
 client.once('clientReady', () => {
   console.log(`✅ ShadowBot listo como ${client.user.tag}`);
+  botReady = true;
+});
+
+// Health endpoint — permite que la web page consulte el estado del bot
+const HEALTH_PORT = process.env.HEALTH_PORT || 3000;
+http.createServer((req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Content-Type', 'application/json');
+
+  if (req.url === '/health' && req.method === 'GET') {
+    // BOT_STATUS puede ser 'online' o 'maintenance' (variable de entorno en Railway)
+    const status = !botReady ? 'starting' : (process.env.BOT_STATUS || 'online');
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status,
+      uptime: Math.floor(process.uptime()),
+      tag: client.user?.tag ?? null,
+    }));
+  } else {
+    res.writeHead(404);
+    res.end('{}');
+  }
+}).listen(HEALTH_PORT, () => {
+  console.log(`🌐 Health endpoint activo en puerto ${HEALTH_PORT}`);
 });
 
 client.on('interactionCreate', async interaction => {
