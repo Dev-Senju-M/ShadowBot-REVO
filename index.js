@@ -43,6 +43,7 @@ require('./events/autorespuesta')(client);
 require('./events/twitch-live')(client);
 require('./events/cumpleanos')(client);
 require('./events/levels')(client);
+require('./events/prefix-commands')(client);
 
 client.once('clientReady', () => {
   console.log(`✅ ShadowBot listo como ${client.user.tag}`);
