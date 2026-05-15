@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { sendModLog } = require('../modlog');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,7 +11,17 @@ module.exports = {
   async execute(interaction) {
     const cantidad = interaction.options.getInteger('cantidad');
     if (cantidad < 1 || cantidad > 100) return interaction.reply({ content: '❌ Pon un número entre 1 y 100.', ephemeral: true });
-    await interaction.channel.bulkDelete(cantidad, true);
-    await interaction.reply({ content: `🗑️ ${cantidad} mensajes eliminados.`, ephemeral: true });
+    const eliminados = await interaction.channel.bulkDelete(cantidad, true);
+    await interaction.reply({ content: `🗑️ ${eliminados.size} mensajes eliminados.`, ephemeral: true });
+
+    await sendModLog(interaction.guild, new EmbedBuilder()
+      .setColor('#95A5A6')
+      .setTitle('🗑️ Clear')
+      .addFields(
+        { name: '🛡️ Moderador', value: `${interaction.user.tag}`, inline: true },
+        { name: '📨 Canal', value: `<#${interaction.channel.id}>`, inline: true },
+        { name: '🗑️ Mensajes eliminados', value: `${eliminados.size}`, inline: true },
+      )
+      .setTimestamp());
   }
 };

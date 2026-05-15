@@ -9,16 +9,18 @@ module.exports = (client) => {
 
     // Revisar cada hora
     setInterval(async () => {
-      const ahora = new Date();
+      // Convertir a hora Guatemala (GMT-6)
+      const utc = Date.now() + new Date().getTimezoneOffset() * 60000;
+      const horaGT = new Date(utc - 6 * 3600000);
 
-      // Solo revisar a medianoche (hora 0)
-      if (ahora.getHours() !== 0) return;
+      // Solo revisar a medianoche Guatemala
+      if (horaGT.getHours() !== 0) return;
 
       const db = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
       if (!db.canal) return;
 
-      const diaHoy = ahora.getDate();
-      const mesHoy = ahora.getMonth() + 1;
+      const diaHoy = horaGT.getDate();
+      const mesHoy = horaGT.getMonth() + 1;
 
       const cumpleaneros = Object.entries(db.usuarios).filter(
         ([, data]) => data.dia === diaHoy && data.mes === mesHoy
@@ -30,7 +32,7 @@ module.exports = (client) => {
         const canal = guild.channels.cache.get(db.canal);
         if (!canal) continue;
 
-        for (const [userId] of cumpleaneros) {
+        for (const [userId, data] of cumpleaneros) {
           const member = await guild.members.fetch(userId).catch(() => null);
           if (!member) continue;
 

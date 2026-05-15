@@ -222,6 +222,23 @@ module.exports = {
       db.usuarios[target.id].mensajes += mensajes;
       saveDB(db);
 
+      // Verificar si el usuario ahora califica para un nivel superior
+      const userData = db.usuarios[target.id];
+      const hVoz = userData.minutos_voz / 60;
+      const msgs = userData.mensajes;
+      const elegible = (db.niveles || [])
+        .filter(n => hVoz >= n.horas_voz && msgs >= n.mensajes)
+        .sort((a, b) => b.nivel - a.nivel)[0];
+      if (elegible && elegible.nivel > (userData.nivel || 0)) {
+        db.usuarios[target.id].nivel = elegible.nivel;
+        saveDB(db);
+        const targetMember = await interaction.guild.members.fetch(target.id).catch(() => null);
+        const rol = interaction.guild.roles.cache.get(elegible.rol_id);
+        if (targetMember && rol && !targetMember.roles.cache.has(rol.id)) {
+          await targetMember.roles.add(rol).catch(console.error);
+        }
+      }
+
       await interaction.reply({
         embeds: [
           new EmbedBuilder()

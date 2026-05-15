@@ -7,7 +7,8 @@
       "Bash(python -c \"import json; d=json.load\\(open\\('package-lock.json'\\)\\); pkgs=d.get\\('packages',{}\\); emnapi=[k for k in pkgs if 'emnapi' in k]; print\\('\\\\n'.join\\(emnapi\\)\\)\")",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(dir \"C:\\\\Users\\\\gdyna\\\\OneDrive - Universidad Rafael Landivar\\\\Codigos\\\\ShadowBot-REVO\")"
     ]
   }
 }

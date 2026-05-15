@@ -18,7 +18,7 @@ async function refreshToken() {
   token = res.data.access_token;
 }
 
-async function updateTwitchStats(client) {
+async function updateTwitchStats(client, retry = true) {
   try {
     const headers = {
       'Client-ID': process.env.TWITCH_CLIENT_ID,
@@ -62,8 +62,69 @@ async function updateTwitchStats(client) {
       }
     }
   } catch (err) {
-    if (err.response?.status === 401) await refreshToken();
-    else console.error('Twitch stats error:', err.message);
+    if (err.response?.status === 401 && retry) {
+      await refreshToken();
+      await updateTwitchStats(client, false);
+    } else console.error('Twitch stats error:', err.message);
+  }
+}
+
+async function checkTwitchLive(client, retry = true) {
+  try {
+    const headers = {
+      'Client-ID': process.env.TWITCH_CLIENT_ID,
+      'Authorization': `Bearer ${token}`
+    };
+
+    const streamRes = await axios.get(
+      `https://api.twitch.tv/helix/streams?user_login=${TWITCH_CHANNEL}`,
+      { headers }
+    );
+
+    const stream = streamRes.data.data[0];
+    const enVivo = !!stream;
+
+    if (enVivo && !estabaEnVivo) {
+      estabaEnVivo = true;
+
+      const canal = client.channels.cache.get(NOTIFY_CHANNEL_ID);
+      if (!canal) return;
+
+      const { EmbedBuilder } = require('discord.js');
+      const userRes = await axios.get(
+        `https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`,
+        { headers }
+      );
+      const user = userRes.data.data[0];
+
+      const embed = new EmbedBuilder()
+        .setColor('#9146FF')
+        .setTitle(`🔴 ¡${user.display_name} está EN VIVO!`)
+        .setURL(`https://twitch.tv/${TWITCH_CHANNEL}`)
+        .setThumbnail(user.profile_image_url)
+        .addFields(
+          { name: '🎮 Jugando', value: stream.game_name || 'Sin categoría', inline: true },
+          { name: '👁️ Viewers', value: `${stream.viewer_count.toLocaleString()}`, inline: true },
+          { name: '📝 Título', value: stream.title || 'Sin título', inline: false },
+        )
+        .setImage(stream.thumbnail_url.replace('{width}', '1280').replace('{height}', '720'))
+        .setFooter({ text: 'Twitch • Santuario Mocho 🌑' })
+        .setTimestamp();
+
+      await canal.send({
+        content: `@everyone 🔴 **¡${user.display_name} está en vivo!** 👉 https://twitch.tv/${TWITCH_CHANNEL}`,
+        embeds: [embed]
+      });
+
+    } else if (!enVivo) {
+      estabaEnVivo = false;
+    }
+
+  } catch (err) {
+    if (err.response?.status === 401 && retry) {
+      await refreshToken();
+      await checkTwitchLive(client, false);
+    } else console.error('Twitch live error:', err.message);
   }
 }
 
@@ -73,62 +134,6 @@ module.exports = (client) => {
     await updateTwitchStats(client);
 
     setInterval(() => updateTwitchStats(client), 10 * 60 * 1000);
-
-    setInterval(async () => {
-      try {
-        const headers = {
-          'Client-ID': process.env.TWITCH_CLIENT_ID,
-          'Authorization': `Bearer ${token}`
-        };
-
-        const streamRes = await axios.get(
-          `https://api.twitch.tv/helix/streams?user_login=${TWITCH_CHANNEL}`,
-          { headers }
-        );
-
-        const stream = streamRes.data.data[0];
-        const enVivo = !!stream;
-
-        if (enVivo && !estabaEnVivo) {
-          estabaEnVivo = true;
-
-          const canal = client.channels.cache.get(NOTIFY_CHANNEL_ID);
-          if (!canal) return;
-
-          const { EmbedBuilder } = require('discord.js');
-          const userRes = await axios.get(
-            `https://api.twitch.tv/helix/users?login=${TWITCH_CHANNEL}`,
-            { headers }
-          );
-          const user = userRes.data.data[0];
-
-          const embed = new EmbedBuilder()
-            .setColor('#9146FF')
-            .setTitle(`🔴 ¡${user.display_name} está EN VIVO!`)
-            .setURL(`https://twitch.tv/${TWITCH_CHANNEL}`)
-            .setThumbnail(user.profile_image_url)
-            .addFields(
-              { name: '🎮 Jugando', value: stream.game_name || 'Sin categoría', inline: true },
-              { name: '👁️ Viewers', value: `${stream.viewer_count.toLocaleString()}`, inline: true },
-              { name: '📝 Título', value: stream.title || 'Sin título', inline: false },
-            )
-            .setImage(stream.thumbnail_url.replace('{width}', '1280').replace('{height}', '720'))
-            .setFooter({ text: 'Twitch • Santuario Mocho 🌑' })
-            .setTimestamp();
-
-          await canal.send({
-            content: `@everyone 🔴 **¡${user.display_name} está en vivo!** 👉 https://twitch.tv/${TWITCH_CHANNEL}`,
-            embeds: [embed]
-          });
-
-        } else if (!enVivo) {
-          estabaEnVivo = false;
-        }
-
-      } catch (err) {
-        if (err.response?.status === 401) await refreshToken();
-        else console.error('Twitch live error:', err.message);
-      }
-    }, CHECK_INTERVAL);
+    setInterval(() => checkTwitchLive(client), CHECK_INTERVAL);
   });
 };

@@ -15,6 +15,8 @@ function horaGuatemala() {
 
 const enVoz = new Map(); // userId -> { entrada, canal }
 const actividadDiaria = new Map(); // userId -> ultimoDia
+const msgCooldown = new Map(); // userId -> timestamp del último mensaje que contó XP
+const COOLDOWN_MS = 60 * 1000; // 1 minuto entre mensajes que suman XP
 
 async function notificarLogro(client, guild, userId, logro) {
   const db = getDB();
@@ -116,6 +118,47 @@ async function checkAmigo(client, guild, userId) {
   if (asignado) await notificarLogro(client, guild, userId, logro);
 }
 
+// ── VERIFICAR SUBIDA DE NIVEL ──
+async function checkLevelUp(client, guild, userId) {
+  const db = getDB();
+  const data = db.usuarios?.[userId];
+  if (!data || !db.niveles?.length) return;
+
+  const horasVoz = (data.minutos_voz || 0) / 60;
+  const mensajes = data.mensajes || 0;
+
+  const elegible = db.niveles
+    .filter(n => typeof n.nivel === 'number' && horasVoz >= n.horas_voz && mensajes >= n.mensajes)
+    .sort((a, b) => b.nivel - a.nivel)[0];
+
+  if (!elegible || elegible.nivel <= (data.nivel || 0)) return;
+
+  db.usuarios[userId].nivel = elegible.nivel;
+  saveDB(db);
+
+  const member = await guild.members.fetch(userId).catch(() => null);
+  if (!member) return;
+  const rol = guild.roles.cache.get(elegible.rol_id);
+  if (rol && !member.roles.cache.has(rol.id)) {
+    await member.roles.add(rol).catch(console.error);
+  }
+
+  if (!db.canal_notificaciones) return;
+  const canal = guild.channels.cache.get(db.canal_notificaciones);
+  if (!canal) return;
+
+  const embed = new EmbedBuilder()
+    .setColor('#9B59B6')
+    .setTitle('⭐ ¡Subiste de nivel!')
+    .setDescription(`### 🎉 <@${userId}> alcanzó **Lvl ${elegible.nivel} — ${elegible.nombre}**!\n\n𝑳𝒂𝒔 𝒔𝒐𝒎𝒃𝒓𝒂𝒔 𝒕𝒆 𝒓𝒆𝒄𝒐𝒏𝒐𝒄𝒆𝒏. 🌑`)
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
+    .addFields({ name: '🎭 Rol', value: `<@&${elegible.rol_id}>`, inline: true })
+    .setFooter({ text: 'Santuario Mocho 🌑' })
+    .setTimestamp();
+
+  await canal.send({ content: `⭐ <@${userId}> subió al nivel ${elegible.nivel}!`, embeds: [embed] });
+}
+
 // ── VERIFICAR LOGRO: ??? ──
 async function checkMisterioso(client, guild, userId) {
   const db = getDB();
@@ -148,8 +191,14 @@ module.exports = (client) => {
   client.on('messageCreate', async (message) => {
     if (message.author.bot || !message.guild) return;
 
-    const db = getDB();
     const userId = message.author.id;
+
+    // Cooldown: solo cuenta 1 mensaje por minuto para evitar spam farming
+    const ultimo = msgCooldown.get(userId);
+    if (ultimo && Date.now() - ultimo < COOLDOWN_MS) return;
+    msgCooldown.set(userId, Date.now());
+
+    const db = getDB();
 
     if (!db.usuarios) db.usuarios = {};
     if (!db.usuarios[userId]) db.usuarios[userId] = { mensajes: 0, minutos_voz: 0, nivel: 0, logros_obtenidos: [], dias_seguidos: 0, ultimo_dia: null };
@@ -176,6 +225,7 @@ module.exports = (client) => {
 
     saveDB(db);
 
+    await checkLevelUp(client, message.guild, userId);
     await checkMisterioso(client, message.guild, userId);
   });
 
@@ -206,6 +256,7 @@ module.exports = (client) => {
           db.usuarios[userId].minutos_voz += minutos;
           saveDB(db);
 
+          await checkLevelUp(client, guild, userId);
           await checkMisterioso(client, guild, userId);
         }
       }

@@ -67,6 +67,9 @@ module.exports = (client, player) => {
         await interaction.reply({ content: mode === 1 ? '🔁 Loop activado.' : '➡️ Loop desactivado.', ephemeral: true });
         break;
       case 'music_prev':
+        if (!queue.history.tracks.size) {
+          return interaction.reply({ content: '❌ No hay canciones anteriores.', ephemeral: true });
+        }
         await queue.history.previous();
         await interaction.reply({ content: '⏮️ Canción anterior.', ephemeral: true });
         break;

@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { sendModLog } = require('../modlog');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,5 +16,18 @@ module.exports = {
     const razon = interaction.options.getString('razon') ?? 'Sin razón especificada';
     await target.timeout(minutos * 60 * 1000, razon);
     await interaction.reply(`🔇 **${target.user.tag}** silenciado por ${minutos} minuto(s). Razón: ${razon}`);
+
+    await sendModLog(interaction.guild, new EmbedBuilder()
+      .setColor('#F1C40F')
+      .setTitle('🔇 Mute')
+      .setThumbnail(target.user.displayAvatarURL({ dynamic: true, size: 64 }))
+      .addFields(
+        { name: '👤 Usuario', value: `${target.user.tag} (<@${target.id}>)`, inline: true },
+        { name: '🛡️ Moderador', value: `${interaction.user.tag}`, inline: true },
+        { name: '⏱️ Duración', value: `${minutos} minuto(s)`, inline: true },
+        { name: '📋 Razón', value: razon },
+      )
+      .setFooter({ text: `ID: ${target.id}` })
+      .setTimestamp());
   }
 };
