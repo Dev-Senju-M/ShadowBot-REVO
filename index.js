@@ -45,6 +45,7 @@ require('./events/twitch-live')(client);
 require('./events/cumpleanos')(client);
 require('./events/levels')(client);
 require('./events/prefix-commands')(client);
+require('./events/fortnite-shop')(client);
 
 let botReady = false;
 
