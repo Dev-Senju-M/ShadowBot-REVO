@@ -8,7 +8,12 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(dir \"C:\\\\Users\\\\gdyna\\\\OneDrive - Universidad Rafael Landivar\\\\Codigos\\\\ShadowBot-REVO\")"
+      "Bash(dir \"C:\\\\Users\\\\gdyna\\\\OneDrive - Universidad Rafael Landivar\\\\Codigos\\\\ShadowBot-REVO\")",
+      "WebFetch(domain:fnbr.co)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\gdyna\\\\OneDrive - Universidad Rafael Landivar\\\\Codigos\\\\ShadowBot-REVO\" | Where-Object { $_.Name -ne 'node_modules' } | Select-Object Name)",
+      "PowerShell($response = Invoke-RestMethod -Uri \"https://fnbr.co/api/shop\" -Headers @{ \"x-api-key\" = \"496c63fd-fbe3-4a7a-be07-eafb5f822e48\" }; Write-Output \"TOP KEYS: $\\($response.data.PSObject.Properties.Name -join ', '\\)\"; Write-Output \"FEATURED COUNT: $\\($response.data.featured.Count\\)\"; Write-Output \"DAILY COUNT: $\\($response.data.daily.Count\\)\"; Write-Output \"--- FIRST FEATURED ITEM ---\"; $item = $response.data.featured[0]; Write-Output \"name=$\\($item.name\\) | price=$\\($item.price\\) | rarity=$\\($item.rarity\\) | type=$\\($item.type\\) | readableType=$\\($item.readableType\\)\"; Write-Output \"images.icon=$\\($item.images.icon\\)\"; Write-Output \"images.png=$\\($item.images.png\\)\"; Write-Output \"images.featured=$\\($item.images.featured\\)\")",
+      "PowerShell($response = Invoke-RestMethod -Uri \"https://fnbr.co/api/shop\" -Headers @{ \"x-api-key\" = \"496c63fd-fbe3-4a7a-be07-eafb5f822e48\" }; $sections = $response.data.sections; Write-Output \"SECTIONS COUNT: $\\($sections.Count\\)\"; $sections | ForEach-Object { Write-Output \"  section: $\\($_.name\\) | id=$\\($_.id\\) | landingPriority=$\\($_.landingPriority\\) | itemCount=$\\($_.itemCount\\)\" })",
+      "PowerShell($response = Invoke-RestMethod -Uri \"https://fnbr.co/api/shop\" -Headers @{ \"x-api-key\" = \"496c63fd-fbe3-4a7a-be07-eafb5f822e48\" }; $sections = $response.data.sections; $sections[0] | ConvertTo-Json -Depth 3)"
     ]
   }
 }
