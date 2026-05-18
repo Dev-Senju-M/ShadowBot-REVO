@@ -1,21 +1,26 @@
-const { fetchShop, buildEmbeds } = require('../utils/fortnite-shop');
+const fs   = require('fs');
+const path = require('path');
+const { fetchShop, buildMessages } = require('../utils/fortnite-shop');
+
+const configPath = path.join(__dirname, '../config.json');
 
 module.exports = (client) => {
   let lastPostedDate = null;
 
   client.once('clientReady', () => {
-    // Revisar cada 5 minutos si es hora de publicar la tienda
     setInterval(async () => {
-      const channelId = process.env.FORTNITE_SHOP_CHANNEL;
-      if (!channelId || !process.env.FNBR_API_KEY) return;
+      if (!process.env.FNBR_API_KEY) return;
 
-      // La tienda rota a medianoche UTC
+      // La tienda rota a medianoche UTC; publicar a las 00:05 UTC
       const now = new Date();
-      const todayUTC = now.toISOString().slice(0, 10); // "2026-05-18"
-
-      // Solo publicar una vez por día, a partir de las 00:05 UTC
-      if (lastPostedDate === todayUTC) return;
       if (now.getUTCHours() !== 0 || now.getUTCMinutes() < 5) return;
+
+      const todayUTC = now.toISOString().slice(0, 10);
+      if (lastPostedDate === todayUTC) return;
+
+      const config    = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const channelId = config.fortniteShopChannel;
+      if (!channelId) return;
 
       const channel = client.channels.cache.get(channelId);
       if (!channel) {
@@ -25,10 +30,10 @@ module.exports = (client) => {
 
       try {
         const shopData = await fetchShop();
-        const chunks   = buildEmbeds(shopData);
+        const messages = await buildMessages(shopData);
 
-        for (const chunk of chunks) {
-          await channel.send({ embeds: chunk });
+        for (const msg of messages) {
+          await channel.send(msg);
         }
 
         lastPostedDate = todayUTC;
@@ -36,6 +41,6 @@ module.exports = (client) => {
       } catch (err) {
         console.error('[fortnite-shop] Error al publicar tienda:', err.message);
       }
-    }, 5 * 60 * 1000); // cada 5 minutos
+    }, 5 * 60 * 1000);
   });
 };

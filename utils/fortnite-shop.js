@@ -1,5 +1,6 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const axios = require('axios');
+const { generateSectionImage } = require('./generate-shop-image');
 
 const RARITY_COLOR = {
   frozen:        '#97F2F3',
@@ -18,34 +19,9 @@ const RARITY_COLOR = {
   starwars:      '#FFE81F',
 };
 
-const RARITY_EMOJI = {
-  frozen:        '❄️',
-  lava:          '🌋',
-  legendary:     '🟡',
-  epic:          '🟣',
-  rare:          '🔵',
-  uncommon:      '🟢',
-  common:        '⚪',
-  marvel:        '🔴',
-  dc:            '🔷',
-  icon:          '🩵',
-  shadow:        '🖤',
-  slurp:         '🩵',
-  gaminglegends: '🎮',
-  starwars:      '⭐',
-};
-
 function dominantColor(items) {
   const rarity = items?.[0]?.rarity?.toLowerCase() ?? '';
   return RARITY_COLOR[rarity] ?? '#FF6B35';
-}
-
-function bestImage(item) {
-  const img = item?.images ?? {};
-  if (img.featured && img.featured !== false) return img.featured;
-  if (img.png      && img.png      !== false) return img.png;
-  if (img.icon     && img.icon     !== false) return img.icon;
-  return null;
 }
 
 async function fetchShop() {
@@ -56,7 +32,8 @@ async function fetchShop() {
   return res.data.data;
 }
 
-function buildEmbeds(shopData) {
+// Devuelve un array de payloads listos para Discord: [{ embeds, files }]
+async function buildMessages(shopData) {
   const allItems = [...(shopData.featured ?? []), ...(shopData.daily ?? [])];
   const itemMap  = new Map(allItems.map(i => [i.id, i]));
 
@@ -67,58 +44,55 @@ function buildEmbeds(shopData) {
     ? `<t:${Math.floor(new Date(shopData.date).getTime() / 1000)}:D>`
     : 'Hoy';
 
+  const messages = [];
+
+  // ── Mensaje 1: resumen (solo texto, rápido) ───────────────────────
   const sectionList = sections
-    .map(s => `**${s.displayName}** — ${s.items?.length ?? 0} artículo(s)`)
+    .map(s => `> **${s.displayName}** — ${s.items?.length ?? 0} artículo(s)`)
     .join('\n');
 
-  const header = new EmbedBuilder()
-    .setColor('#FF6B35')
-    .setTitle('🏪 Tienda de Fortnite')
-    .setDescription(`Rotación del ${date} • **${allItems.length}** artículos en total\n\n${sectionList}`)
-    .setThumbnail('https://fnbr.co/images/fnbr-icon.png')
-    .setFooter({ text: 'fnbr.co • ShadowBot' })
-    .setTimestamp();
+  messages.push({
+    embeds: [
+      new EmbedBuilder()
+        .setColor('#FF6B35')
+        .setTitle('🏪 Tienda de Fortnite')
+        .setDescription(`Rotación del ${date} • **${allItems.length}** artículos\n\n${sectionList}`)
+        .setThumbnail('https://fnbr.co/images/fnbr-icon.png')
+        .setFooter({ text: 'fnbr.co • ShadowBot' })
+        .setTimestamp(),
+    ],
+    files: [],
+  });
 
-  // Agrupar en bloques de máx 10 embeds (1 header + 9 secciones)
-  const MAX_ITEMS_PER_SECTION = 12;
-  const allEmbeds = [header];
-
+  // ── Un mensaje por sección: imagen generada con canvas ────────────
   for (const section of sections) {
     const sectionItems = (section.items ?? [])
       .map(id => itemMap.get(id))
-      .filter(Boolean)
-      .slice(0, MAX_ITEMS_PER_SECTION);
+      .filter(Boolean);
 
     if (!sectionItems.length) continue;
 
-    const fields = sectionItems.map(item => {
-      const rarity = item.rarity?.toLowerCase() ?? '';
-      const price  = item.price != null ? `${item.price} V-Bucks` : 'Gratis';
-      return {
-        name:   `${RARITY_EMOJI[rarity] ?? '🎮'} ${item.name}`,
-        value:  `${price}\n*${item.readableType ?? item.type ?? 'Cosmético'}*`,
-        inline: true,
-      };
-    });
+    let imageBuffer;
+    try {
+      imageBuffer = await generateSectionImage(sectionItems);
+    } catch (err) {
+      console.error(`[fortnite-shop] Error generando imagen para "${section.displayName}":`, err.message);
+      continue;
+    }
+
+    const fileName   = `shop-${section.key ?? section.displayName.replace(/\s+/g, '-')}.png`;
+    const attachment = new AttachmentBuilder(imageBuffer, { name: fileName });
 
     const embed = new EmbedBuilder()
       .setColor(dominantColor(sectionItems))
       .setTitle(section.displayName)
-      .addFields(fields)
-      .setFooter({ text: `${section.items.length} artículo(s) en esta sección` });
+      .setImage(`attachment://${fileName}`)
+      .setFooter({ text: `${sectionItems.length} artículo(s)` });
 
-    const thumb = bestImage(sectionItems[0]);
-    if (thumb) embed.setThumbnail(thumb);
-
-    allEmbeds.push(embed);
+    messages.push({ embeds: [embed], files: [attachment] });
   }
 
-  // Dividir en chunks de 10 (límite de Discord por mensaje)
-  const chunks = [];
-  for (let i = 0; i < allEmbeds.length; i += 10) {
-    chunks.push(allEmbeds.slice(i, i + 10));
-  }
-  return chunks;
+  return messages;
 }
 
-module.exports = { fetchShop, buildEmbeds };
+module.exports = { fetchShop, buildMessages };
