@@ -19,6 +19,15 @@ async function buildMessages(shopData) {
   const daily    = shopData.daily    ?? [];
   const allItems = [...featured, ...daily];
 
+  // DEBUG: estructura de la API (se puede quitar después de verificar)
+  console.log('[fortnite-shop] Keys del shopData:', Object.keys(shopData));
+  console.log('[fortnite-shop] featured:', featured.length, '| daily:', daily.length);
+  if (allItems[0]) {
+    const s = allItems[0];
+    console.log('[fortnite-shop] Primer item — name:', s.name, '| rarity:', s.rarity,
+      '| price:', s.price, '| images:', JSON.stringify(s.images));
+  }
+
   const date = shopData.date
     ? `<t:${Math.floor(new Date(shopData.date).getTime() / 1000)}:D>`
     : 'Hoy';
