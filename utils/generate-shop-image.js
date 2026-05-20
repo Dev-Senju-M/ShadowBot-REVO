@@ -66,15 +66,27 @@ function fitText(ctx, text, maxWidth) {
 }
 
 function getItemImage(item) {
-  return item.images?.featured ?? item.images?.icon ?? item.icon ?? item.image ?? null;
+  // fnbr.co: images.icon es el más consistente; featured solo existe en algunos
+  return item.images?.icon
+    ?? item.images?.featured
+    ?? item.images?.png
+    ?? item.icon
+    ?? item.image
+    ?? null;
 }
 function getItemName(item)  { return item.name ?? item.displayName ?? ''; }
 function getItemType(item)  {
+  // readableType es el campo legible de fnbr.co ("Outfit", "Pickaxe", etc.)
+  if (item.readableType) return item.readableType;
   if (typeof item.type === 'object') return item.type?.value ?? item.type?.id ?? '';
   return item.type ?? '';
 }
 function getItemPrice(item) {
-  return item.price?.finalPrice ?? item.price?.regularPrice ?? item.price ?? '?';
+  // price puede ser string ("800") o número o { finalPrice, regularPrice }
+  const p = item.price;
+  if (p == null) return '?';
+  if (typeof p === 'object') return p.finalPrice ?? p.regularPrice ?? '?';
+  return p;
 }
 function getRarity(item) { return item.rarity?.toLowerCase?.() ?? 'common'; }
 
