@@ -17,20 +17,22 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    // Resolver canal desde caché del guild para tener el objeto completo
+    await interaction.deferReply({ ephemeral: true });
+
+    // Resolver canal desde caché del guild (evita el partial channel)
     const canalOption = interaction.options.getChannel('canal', true);
     const canal = interaction.guild.channels.cache.get(canalOption.id)
       ?? await interaction.guild.channels.fetch(canalOption.id).catch(() => null);
 
     if (!canal) {
-      return interaction.reply({ content: '❌ No pude resolver el canal. Intenta de nuevo.', ephemeral: true });
+      return interaction.followUp({ content: '❌ No pude resolver el canal. Intenta de nuevo.', ephemeral: true });
     }
 
-    // Verificar permisos del bot en ese canal
-    const botMember = interaction.guild.members.me;
-    if (!canal.permissionsFor(botMember).has(['SendMessages', 'EmbedLinks', 'AttachFiles'])) {
-      return interaction.reply({
-        content: `❌ No tengo permisos para enviar mensajes, embeds o archivos en <#${canal.id}>.`,
+    // Verificar permisos del bot en el canal
+    const me = interaction.guild.members.me;
+    if (!canal.permissionsFor(me).has(['SendMessages', 'EmbedLinks', 'AttachFiles'])) {
+      return interaction.followUp({
+        content: `❌ No tengo permisos para enviar mensajes en <#${canal.id}>. Necesito: **Enviar mensajes**, **Insertar enlaces**, **Adjuntar archivos**.`,
         ephemeral: true,
       });
     }
@@ -42,17 +44,31 @@ module.exports = {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     } catch (err) {
       console.error('[setup-tienda-fortnite] Error guardando config:', err.message);
-      return interaction.reply({ content: '❌ Error guardando la configuración.', ephemeral: true });
+      return interaction.followUp({ content: '❌ Error guardando la configuración.', ephemeral: true });
     }
 
-    const embed = new EmbedBuilder()
+    // Confirmar al admin
+    const confirmEmbed = new EmbedBuilder()
       .setColor('#FF6B35')
       .setTitle('✅ Tienda de Fortnite configurada')
-      .setDescription(`La tienda se publicará en <#${canal.id}> cada día a medianoche UTC.`)
+      .setDescription(`La tienda se publicará en <#${canal.id}> automáticamente cada día a medianoche UTC.\n\nEnviando la tienda actual al canal...`)
       .addFields({ name: '📢 Canal', value: `<#${canal.id}>`, inline: true })
       .setFooter({ text: 'ShadowBot • Fortnite Shop' })
       .setTimestamp();
 
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.followUp({ embeds: [confirmEmbed], ephemeral: true });
+
+    // Enviar la tienda actual al canal inmediatamente
+    if (process.env.FNBR_API_KEY) {
+      try {
+        const { fetchShop, buildMessages } = require('../utils/fortnite-shop');
+        const shopData = await fetchShop();
+        const messages = await buildMessages(shopData);
+        for (const msg of messages) await canal.send(msg);
+      } catch (err) {
+        console.error('[setup-tienda-fortnite] Error enviando tienda inicial:', err.message);
+        await canal.send('⚠️ No se pudo cargar la tienda de Fortnite en este momento. Se intentará automáticamente mañana a medianoche UTC.').catch(() => {});
+      }
+    }
   },
 };
