@@ -139,22 +139,26 @@ async function drawCard(ctx, item, x, y, cardW, cardH, iconImg, vbImg) {
   ctx.textBaseline = 'top';
   ctx.fillText(fitText(ctx, getItemName(item), iw - pad * 2), ix + pad, barY + 3);
 
-  // Precio y tipo en la fila inferior
-  const rowY = barY + 16;
-  const ICON = 10;
+  // Fila inferior: precio (izquierda) + tipo (derecha)
+  const ICON = 11;
+  const rowY = barY + BOTTOM - ICON - 6;  // pegado al fondo de la barra
 
-  // V-Bucks icon + precio (izquierda)
+  // V-Bucks icon
   if (vbImg) ctx.drawImage(vbImg, ix + pad, rowY, ICON, ICON);
-  ctx.font         = '8px Arial, sans-serif';
-  ctx.fillStyle    = '#c8f0ff';
+
+  // Precio
+  const priceStr = String(getItemPrice(item));
+  ctx.font         = 'bold 10px Arial, sans-serif';
+  ctx.fillStyle    = 'white';
   ctx.textAlign    = 'left';
-  ctx.textBaseline = 'top';
-  ctx.fillText(String(getItemPrice(item)), ix + pad + ICON + 2, rowY + 1);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(priceStr, ix + pad + ICON + 3, rowY + ICON / 2);
 
   // Tipo/rareza (derecha, coloreado)
+  ctx.font      = '9px Arial, sans-serif';
   ctx.fillStyle = colorA;
   ctx.textAlign = 'right';
-  ctx.fillText(getItemType(item) || rarity, ix + iw - pad, rowY + 1);
+  ctx.fillText(getItemType(item) || rarity, ix + iw - pad, rowY + ICON / 2);
 }
 
 // Genera una imagen para un array de items (máx 30 recomendado para buenas proporciones)
