@@ -66,13 +66,9 @@ function fitText(ctx, text, maxWidth) {
 }
 
 function getItemImage(item) {
-  // fnbr.co: images.icon es el más consistente; featured solo existe en algunos
-  return item.images?.icon
-    ?? item.images?.featured
-    ?? item.images?.png
-    ?? item.icon
-    ?? item.image
-    ?? null;
+  // images.featured and images.png can be `false` (boolean) — use || to skip falsy values
+  const imgs = item.images ?? {};
+  return imgs.icon || imgs.featured || imgs.png || item.icon || item.image || null;
 }
 function getItemName(item)  { return item.name ?? item.displayName ?? ''; }
 function getItemType(item)  {
