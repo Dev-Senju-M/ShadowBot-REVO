@@ -91,13 +91,11 @@ async function generateSectionImage(items) {
       ctx.restore();
     }
 
-    // Barra de precio (fondo semitransparente oscuro)
+    // Barra de precio: esquinas superiores cuadradas, inferiores redondeadas
     const barY = y + ICON + PAD * 2;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.60)';
-    roundRect(ctx, x, barY, CELL_W, PRICE_H, 0);
-    ctx.fillRect(x, barY, CELL_W, PRICE_H);
-    // Esquinas inferiores redondeadas
-    roundRect(ctx, x, barY, CELL_W, PRICE_H, 10);
+    ctx.fillRect(x, barY, CELL_W, PRICE_H / 2);       // mitad superior (cuadrada)
+    roundRect(ctx, x, barY + PRICE_H / 2, CELL_W, PRICE_H / 2, 10); // mitad inferior (redondeada)
     ctx.fill();
 
     // Ícono V-Bucks

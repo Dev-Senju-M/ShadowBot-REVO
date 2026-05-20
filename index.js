@@ -86,7 +86,12 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    await interaction.reply({ content: '❌ Hubo un error.', ephemeral: true });
+    const payload = { content: '❌ Hubo un error.', ephemeral: true };
+    if (interaction.deferred || interaction.replied) {
+      await interaction.followUp(payload).catch(console.error);
+    } else {
+      await interaction.reply(payload).catch(console.error);
+    }
   }
 });
 

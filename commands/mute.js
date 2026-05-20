@@ -14,6 +14,7 @@ module.exports = {
     const target = interaction.options.getMember('usuario');
     const minutos = interaction.options.getInteger('minutos');
     const razon = interaction.options.getString('razon') ?? 'Sin razón especificada';
+    if (!target) return interaction.reply({ content: '❌ Ese usuario no está en el servidor.', ephemeral: true });
     await target.timeout(minutos * 60 * 1000, razon);
     await interaction.reply(`🔇 **${target.user.tag}** silenciado por ${minutos} minuto(s). Razón: ${razon}`);
 

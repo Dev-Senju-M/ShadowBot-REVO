@@ -61,11 +61,12 @@ module.exports = (client, player) => {
         queue.delete();
         await interaction.reply({ content: '⏹️ Música detenida.', ephemeral: true });
         break;
-      case 'music_loop':
+      case 'music_loop': {
         const mode = queue.repeatMode === 0 ? 1 : 0;
         queue.setRepeatMode(mode);
         await interaction.reply({ content: mode === 1 ? '🔁 Loop activado.' : '➡️ Loop desactivado.', ephemeral: true });
         break;
+      }
       case 'music_prev':
         if (!queue.history.tracks.size) {
           return interaction.reply({ content: '❌ No hay canciones anteriores.', ephemeral: true });

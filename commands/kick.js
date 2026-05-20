@@ -12,6 +12,7 @@ module.exports = {
   async execute(interaction) {
     const target = interaction.options.getMember('usuario');
     const razon = interaction.options.getString('razon') ?? 'Sin razón especificada';
+    if (!target) return interaction.reply({ content: '❌ Ese usuario no está en el servidor.', ephemeral: true });
     if (!target.kickable) return interaction.reply({ content: '❌ No puedo expulsar a este usuario.', ephemeral: true });
     await target.kick(razon);
     await interaction.reply(`👢 **${target.user.tag}** fue expulsado. Razón: ${razon}`);
