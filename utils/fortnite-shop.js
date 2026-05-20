@@ -1,6 +1,6 @@
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const axios = require('axios');
-const { generateShopImage } = require('./generate-shop-image');
+const { generateSectionImage } = require('./generate-shop-image');
 
 async function fetchShop() {
   const res = await axios.get('https://fnbr.co/api/shop', {
@@ -13,33 +13,64 @@ async function fetchShop() {
 async function buildMessages(shopData) {
   const featured = shopData.featured ?? [];
   const daily    = shopData.daily    ?? [];
-  const total    = featured.length + daily.length;
+  const date     = shopData.date ?? null;
 
-  const date = shopData.date
-    ? `<t:${Math.floor(new Date(shopData.date).getTime() / 1000)}:D>`
-    : 'Hoy';
+  const embeds = [];
+  const files  = [];
 
-  const embed = new EmbedBuilder()
-    .setColor('#1B4F8A')
-    .setTitle('🏪 Tienda de Fortnite')
-    .setDescription(`Rotación del ${date} • **${total}** artículos`)
-    .setFooter({ text: 'fnbr.co • ShadowBot' })
-    .setTimestamp();
-
-  let imageBuffer;
-  try {
-    imageBuffer = await generateShopImage(shopData);
-  } catch (err) {
-    console.error('[fortnite-shop] Error generando imagen:', err.message);
+  // Generar imagen de Destacados
+  if (featured.length) {
+    try {
+      const buf = await generateSectionImage(featured, 'DESTACADOS', date);
+      const att = new AttachmentBuilder(buf, { name: 'destacados.png' });
+      embeds.push(
+        new EmbedBuilder()
+          .setColor('#f0aa00')
+          .setTitle('⭐ Destacados')
+          .setImage('attachment://destacados.png')
+          .setFooter({ text: `${featured.length} artículo(s)` })
+      );
+      files.push(att);
+    } catch (err) {
+      console.error('[fortnite-shop] Error imagen Destacados:', err.message);
+    }
   }
 
-  if (imageBuffer) {
-    const attachment = new AttachmentBuilder(imageBuffer, { name: 'tienda-fortnite.png' });
-    embed.setImage('attachment://tienda-fortnite.png');
-    return [{ embeds: [embed], files: [attachment] }];
+  // Generar imagen de Diario
+  if (daily.length) {
+    try {
+      const buf = await generateSectionImage(daily, 'DIARIO', date);
+      const att = new AttachmentBuilder(buf, { name: 'diario.png' });
+      embeds.push(
+        new EmbedBuilder()
+          .setColor('#3890e8')
+          .setTitle('📅 Diario')
+          .setImage('attachment://diario.png')
+          .setFooter({ text: `${daily.length} artículo(s)` })
+      );
+      files.push(att);
+    } catch (err) {
+      console.error('[fortnite-shop] Error imagen Diario:', err.message);
+    }
   }
 
-  return [{ embeds: [embed], files: [] }];
+  // Si no hay imágenes, mandar solo embed de texto
+  if (!embeds.length) {
+    const dateStr = date
+      ? `<t:${Math.floor(new Date(date).getTime() / 1000)}:D>`
+      : 'Hoy';
+    embeds.push(
+      new EmbedBuilder()
+        .setColor('#1B4F8A')
+        .setTitle('🏪 Tienda de Fortnite')
+        .setDescription(`Rotación del ${dateStr} • **${featured.length + daily.length}** artículos`)
+        .setFooter({ text: 'fnbr.co • ShadowBot' })
+        .setTimestamp()
+    );
+  }
+
+  // Un solo mensaje con ambas imágenes (Discord muestra los embeds apilados)
+  return [{ embeds, files }];
 }
 
 module.exports = { fetchShop, buildMessages };

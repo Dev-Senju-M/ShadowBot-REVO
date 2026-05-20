@@ -71,9 +71,9 @@ function getItemPrice(item) {
 }
 
 async function drawCard(ctx, item, x, y, cardW, cardH, iconImg, vbucksImg) {
-  const TEXT_H = 52;
+  const TEXT_H = 65;
   const IMG_H  = cardH - TEXT_H;
-  const R      = 8;
+  const R      = 10;
 
   const rarity = item.rarity?.toLowerCase?.() ?? 'common';
   const [colorTop, colorBot] = RARITY_GRADIENT[rarity] ?? ['#606060', '#303030'];
@@ -104,53 +104,43 @@ async function drawCard(ctx, item, x, y, cardW, cardH, iconImg, vbucksImg) {
 
   // Item name
   ctx.fillStyle    = 'white';
-  ctx.font         = 'bold 11px Arial, sans-serif';
+  ctx.font         = 'bold 13px Arial, sans-serif';
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText(fitText(ctx, getItemName(item).toUpperCase(), cardW - 8), x + cardW / 2, textY + 4);
+  ctx.fillText(fitText(ctx, getItemName(item).toUpperCase(), cardW - 10), x + cardW / 2, textY + 6);
 
   // Item type
   ctx.fillStyle = 'rgba(255,255,255,0.65)';
-  ctx.font      = '9px Arial, sans-serif';
-  ctx.fillText(getItemType(item), x + cardW / 2, textY + 19);
+  ctx.font      = '11px Arial, sans-serif';
+  ctx.fillText(getItemType(item), x + cardW / 2, textY + 24);
 
-  // Price row (V-Bucks icon + number)
-  const ICON_H   = 13;
+  // Price row
+  const ICON_H   = 16;
   const priceStr = String(getItemPrice(item));
-  ctx.font = 'bold 11px Arial, sans-serif';
-  const totalW  = ICON_H + 3 + ctx.measureText(priceStr).width;
+  ctx.font = 'bold 13px Arial, sans-serif';
+  const totalW  = ICON_H + 4 + ctx.measureText(priceStr).width;
   const pxStart = x + (cardW - totalW) / 2;
-  const pyMid   = textY + TEXT_H - 14;
+  const pyMid   = textY + TEXT_H - 18;
 
   if (vbucksImg) ctx.drawImage(vbucksImg, pxStart, pyMid - ICON_H / 2, ICON_H, ICON_H);
-
   ctx.fillStyle    = '#7ee8fa';
   ctx.textAlign    = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(priceStr, pxStart + ICON_H + 3, pyMid);
+  ctx.fillText(priceStr, pxStart + ICON_H + 4, pyMid);
 }
 
-async function generateShopImage(shopData) {
-  const featured = shopData.featured ?? [];
-  const daily    = shopData.daily    ?? [];
+// Genera una imagen para un grupo de items (una sección: Destacados o Diario)
+async function generateSectionImage(items, sectionTitle, dateStr) {
+  const CARD_W = 168;
+  const CARD_H = 218;
+  const COLS   = 3;
+  const GAP    = 6;
+  const MARGIN = 14;
+  const HDR_H  = sectionTitle ? 52 : 0;
 
-  // Layout constants
-  const CARD_W  = 122;
-  const CARD_H  = 162;
-  const COLS    = 2;
-  const GAP     = 5;
-  const MARGIN  = 12;
-  const COL_GAP = 16;
-  const HDR_H   = 54;
-  const SEC_H   = 30;
-
-  const featRows = featured.length > 0 ? Math.ceil(featured.length / COLS) : 0;
-  const dailyRows = daily.length  > 0 ? Math.ceil(daily.length    / COLS) : 0;
-  const maxRows   = Math.max(featRows, dailyRows, 1);
-
-  const secW = COLS * CARD_W + (COLS - 1) * GAP;
-  const W    = MARGIN * 2 + secW * 2 + COL_GAP;
-  const H    = MARGIN + HDR_H + SEC_H + maxRows * (CARD_H + GAP) - GAP + MARGIN;
+  const rows = Math.ceil(items.length / COLS);
+  const W    = MARGIN * 2 + COLS * CARD_W + (COLS - 1) * GAP;
+  const H    = MARGIN + HDR_H + rows * (CARD_H + GAP) - GAP + MARGIN;
 
   const canvas = createCanvas(W, H);
   const ctx    = canvas.getContext('2d');
@@ -159,60 +149,45 @@ async function generateShopImage(shopData) {
   ctx.fillStyle = '#1B4F8A';
   ctx.fillRect(0, 0, W, H);
 
-  // Date header
-  ctx.fillStyle    = 'white';
-  ctx.font         = 'bold 19px Arial, sans-serif';
-  ctx.textAlign    = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(formatDateES(shopData.date), W / 2, MARGIN + HDR_H / 2);
+  // Section header
+  if (sectionTitle) {
+    ctx.fillStyle    = 'white';
+    ctx.font         = 'bold 18px Arial, sans-serif';
+    ctx.textAlign    = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(sectionTitle, MARGIN, MARGIN + 18);
 
-  // Section labels + underlines
-  const featX  = MARGIN;
-  const dailyX = MARGIN + secW + COL_GAP;
-  const labelY = MARGIN + HDR_H + SEC_H / 2;
-  const lineY  = MARGIN + HDR_H + SEC_H - 2;
+    if (dateStr) {
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font      = '13px Arial, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(formatDateES(dateStr), W - MARGIN, MARGIN + 18);
+    }
 
-  ctx.font      = 'bold 13px Arial, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = 'white';
-  ctx.fillText('DESTACADOS', featX,  labelY);
-  ctx.fillText('DIARIO',     dailyX, labelY);
-
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-  ctx.lineWidth   = 1;
-  for (const lx of [featX, dailyX]) {
+    // underline
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth   = 1;
     ctx.beginPath();
-    ctx.moveTo(lx, lineY);
-    ctx.lineTo(lx + secW, lineY);
+    ctx.moveTo(MARGIN, MARGIN + HDR_H - 6);
+    ctx.lineTo(W - MARGIN, MARGIN + HDR_H - 6);
     ctx.stroke();
   }
 
-  const startY = MARGIN + HDR_H + SEC_H;
+  const startY = MARGIN + HDR_H;
 
   // Load all images in parallel
-  const all = [...featured, ...daily];
   const [vbImg, ...icons] = await Promise.all([
     loadSafe('https://image.fnbr.co/price/icon_vbucks.png'),
-    ...all.map(it => loadSafe(getItemImage(it))),
+    ...items.map(it => loadSafe(getItemImage(it))),
   ]);
-  const featIcons  = icons.slice(0, featured.length);
-  const dailyIcons = icons.slice(featured.length);
 
-  // Draw featured items
-  for (let i = 0; i < featured.length; i++) {
-    const x = featX  + (i % COLS) * (CARD_W + GAP);
+  for (let i = 0; i < items.length; i++) {
+    const x = MARGIN + (i % COLS) * (CARD_W + GAP);
     const y = startY + Math.floor(i / COLS) * (CARD_H + GAP);
-    await drawCard(ctx, featured[i], x, y, CARD_W, CARD_H, featIcons[i], vbImg);
-  }
-
-  // Draw daily items
-  for (let i = 0; i < daily.length; i++) {
-    const x = dailyX + (i % COLS) * (CARD_W + GAP);
-    const y = startY + Math.floor(i / COLS) * (CARD_H + GAP);
-    await drawCard(ctx, daily[i], x, y, CARD_W, CARD_H, dailyIcons[i], vbImg);
+    await drawCard(ctx, items[i], x, y, CARD_W, CARD_H, icons[i], vbImg);
   }
 
   return canvas.toBuffer('image/png');
 }
 
-module.exports = { generateShopImage };
+module.exports = { generateSectionImage };
