@@ -1,4 +1,5 @@
 const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const axios = require('axios');
 
 const RARITY_GRADIENT = {
   frozen:        ['#b8f0f3', '#3a7a7d'],
@@ -17,9 +18,30 @@ const RARITY_GRADIENT = {
   starwars:      ['#f0c800', '#504000'],
 };
 
+// Descarga con axios (timeout controlado) y luego carga en canvas
 async function loadSafe(url) {
   if (!url) return null;
-  try { return await loadImage(url); } catch { return null; }
+  try {
+    const res = await axios.get(url, {
+      responseType: 'arraybuffer',
+      timeout: 6000,
+      headers: { 'User-Agent': 'ShadowBot/1.0' },
+    });
+    return await loadImage(Buffer.from(res.data));
+  } catch { return null; }
+}
+
+// Carga URLs en lotes de BATCH para no saturar el servidor
+async function loadBatch(urls, BATCH = 6) {
+  const results = [];
+  for (let i = 0; i < urls.length; i += BATCH) {
+    const settled = await Promise.allSettled(
+      urls.slice(i, i + BATCH).map(u => loadSafe(u))
+    );
+    results.push(...settled.map(r => r.status === 'fulfilled' ? r.value : null));
+    if (i + BATCH < urls.length) await new Promise(r => setTimeout(r, 120));
+  }
+  return results;
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -141,9 +163,9 @@ async function generateShopImage(items) {
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
-  const [vbImg, ...icons] = await Promise.all([
-    loadSafe('https://image.fnbr.co/price/icon_vbucks.png'),
-    ...items.map(it => loadSafe(getItemImage(it))),
+  const [vbImg, ...icons] = await loadBatch([
+    'https://image.fnbr.co/price/icon_vbucks.png',
+    ...items.map(it => getItemImage(it)),
   ]);
 
   for (let i = 0; i < items.length; i++) {
