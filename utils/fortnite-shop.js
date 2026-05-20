@@ -40,6 +40,13 @@ async function buildMessages(shopData) {
   const sections = (shopData.sections ?? [])
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
+  // Normaliza section.items tanto si son IDs (string) como objetos completos
+  function resolveSectionItems(rawItems) {
+    return (rawItems ?? []).map(entry =>
+      typeof entry === 'string' ? itemMap.get(entry) : entry
+    ).filter(Boolean);
+  }
+
   const date = shopData.date
     ? `<t:${Math.floor(new Date(shopData.date).getTime() / 1000)}:D>`
     : 'Hoy';
@@ -66,9 +73,7 @@ async function buildMessages(shopData) {
 
   // ── Un mensaje por sección: imagen generada con canvas ────────────
   for (const section of sections) {
-    const sectionItems = (section.items ?? [])
-      .map(id => itemMap.get(id))
-      .filter(Boolean);
+    const sectionItems = resolveSectionItems(section.items);
 
     if (!sectionItems.length) continue;
 
