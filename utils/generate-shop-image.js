@@ -1,5 +1,31 @@
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 const axios = require('axios');
+const fs   = require('fs');
+const path = require('path');
+const os   = require('os');
+
+// Load system fonts (liberation_ttf installed via nixpacks on Railway)
+const systemFontsLoaded = GlobalFonts.loadSystemFonts();
+
+// If no system fonts found, download Roboto as a fallback font
+const FALLBACK_FONT_PATH = path.join(os.tmpdir(), 'sb-roboto.ttf');
+const fontsReady = systemFontsLoaded > 0
+  ? Promise.resolve()
+  : (async () => {
+      try {
+        if (!fs.existsSync(FALLBACK_FONT_PATH)) {
+          const res = await axios.get(
+            'https://fonts.gstatic.com/s/roboto/v47/KFOmCnqEu92Fr1Me5Q.ttf',
+            { responseType: 'arraybuffer', timeout: 12000 }
+          );
+          fs.writeFileSync(FALLBACK_FONT_PATH, Buffer.from(res.data));
+        }
+        GlobalFonts.registerFromPath(FALLBACK_FONT_PATH, 'SBFont');
+        console.log('[shop-image] Fallback font (Roboto) loaded.');
+      } catch (err) {
+        console.error('[shop-image] Font load failed:', err.message);
+      }
+    })();
 
 const RARITY_GRADIENT = {
   frozen:        ['#b8f0f3', '#3a7a7d'],
@@ -128,8 +154,10 @@ async function drawCard(ctx, item, x, y, cardW, cardH, iconImg, vbImg) {
 
   const pad = 4;
 
+  const FONT = systemFontsLoaded > 0 ? 'Liberation Sans, Arial, sans-serif' : 'SBFont, sans-serif';
+
   // Nombre
-  ctx.font         = 'bold 9px Arial, sans-serif';
+  ctx.font         = `bold 10px ${FONT}`;
   ctx.fillStyle    = 'white';
   ctx.textAlign    = 'left';
   ctx.textBaseline = 'top';
@@ -144,14 +172,14 @@ async function drawCard(ctx, item, x, y, cardW, cardH, iconImg, vbImg) {
 
   // Precio
   const priceStr = String(getItemPrice(item));
-  ctx.font         = 'bold 10px Arial, sans-serif';
+  ctx.font         = `bold 11px ${FONT}`;
   ctx.fillStyle    = 'white';
   ctx.textAlign    = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillText(priceStr, ix + pad + ICON + 3, rowY + ICON / 2);
 
   // Tipo/rareza (derecha, coloreado)
-  ctx.font      = '9px Arial, sans-serif';
+  ctx.font      = `9px ${FONT}`;
   ctx.fillStyle = colorA;
   ctx.textAlign = 'right';
   ctx.fillText(getItemType(item) || rarity, ix + iw - pad, rowY + ICON / 2);
@@ -159,6 +187,8 @@ async function drawCard(ctx, item, x, y, cardW, cardH, iconImg, vbImg) {
 
 // Genera una imagen para un array de items (máx 30 recomendado para buenas proporciones)
 async function generateShopImage(items) {
+  await fontsReady;
+
   const CARD_W = 112;
   const CARD_H = 140;
   const COLS   = 6;
