@@ -1,11 +1,16 @@
 require('dotenv').config();
+const path = require('path');
 const { Client, GatewayIntentBits, Collection , MessageFlags} = require('discord.js');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const playdl = require('play-dl');
 const YTDlpWrap = require('yt-dlp-wrap').default;
-const ytdlp = new YTDlpWrap();
 const YouTubeExtractor = require('./utils/youtube-extractor');
+
+// Prefer local binary (installed via railway.json buildCommand), fall back to PATH
+const LOCAL_YTDLP = path.join(process.cwd(), 'yt-dlp');
+const ytdlpBin = require('fs').existsSync(LOCAL_YTDLP) ? LOCAL_YTDLP : undefined;
+const ytdlp = new YTDlpWrap(ytdlpBin);
 const fs = require('fs');
 const http = require('http');
 

@@ -1,13 +1,18 @@
+const path = require('path');
+const fs   = require('fs');
 const { BaseExtractor, Track, QueryType } = require('discord-player');
 const YouTube   = require('youtube-sr').default;
 const YTDlpWrap = require('yt-dlp-wrap').default;
+
+const LOCAL_YTDLP = path.join(process.cwd(), 'yt-dlp');
+const ytdlpBin = fs.existsSync(LOCAL_YTDLP) ? LOCAL_YTDLP : undefined;
 
 class YouTubeExtractor extends BaseExtractor {
   static identifier = 'com.shadowbot.youtube';
 
   async activate() {
     this.protocols = ['ytsearch', 'youtube'];
-    this._ytdlp = new YTDlpWrap();
+    this._ytdlp = new YTDlpWrap(ytdlpBin);
   }
 
   async validate(query, type) {
