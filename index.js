@@ -29,35 +29,50 @@ for (const file of commandFiles) {
 
 const player = new Player(client);
 
+// Diagnóstico: verificar yt-dlp al arranque
+ytdlp.getVersion()
+  .then(v => console.log(`[yt-dlp] ✅ v${v} disponible`))
+  .catch(() => console.error('[yt-dlp] ❌ NO encontrado en PATH — audio no funcionará'));
+
+process.on('unhandledRejection', (err) => {
+  console.error('[unhandledRejection]', err?.message ?? err);
+});
+
 (async () => {
+  console.log('[startup] Cargando extractores...');
   await player.extractors.loadMulti(DefaultExtractors, {
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      // Spotify no provee audio directo — busca en YouTube via yt-dlp (más robusto en Railway)
       createStream: async (_ext, url) => {
-        const data = await _ext._lib.getData(url).catch(() => null);
-        if (!data) throw new Error(`No se pudo resolver datos de Spotify: ${url}`);
+        try {
+          const data = await _ext._lib.getData(url).catch(() => null);
+          if (!data) throw new Error(`Sin datos Spotify para: ${url}`);
 
-        const artist = data.artists?.[0]?.name ?? data.artist ?? '';
-        const title  = data.title ?? data.name ?? '';
-        const query  = [artist, title].filter(Boolean).join(' - ');
-        if (!query) throw new Error(`Sin metadatos para: ${url}`);
+          const artist = data.artists?.[0]?.name ?? data.artist ?? '';
+          const title  = data.title ?? data.name ?? '';
+          const query  = [artist, title].filter(Boolean).join(' - ');
+          if (!query) throw new Error(`Sin metadatos para: ${url}`);
 
-        console.log(`[música] Spotify→YT buscando: "${query}"`);
-        const stream = ytdlp.execStream([
-          `ytsearch1:${query}`,
-          '-f', 'bestaudio/best',
-          '-o', '-',
-          '--no-playlist',
-          '-q', '--no-warnings',
-        ]);
-        return stream;
+          console.log(`[música] Buscando: "${query}"`);
+          const stream = ytdlp.execStream([
+            `ytsearch1:${query}`,
+            '-f', 'bestaudio/best',
+            '-o', '-',
+            '--no-playlist',
+            '-q', '--no-warnings',
+          ]);
+          stream.on('error', e => console.error('[música:stream]', e.message));
+          return stream;
+        } catch (err) {
+          console.error('[música:createStream]', err.message);
+          throw err;
+        }
       },
     }
   });
   await player.extractors.register(YouTubeExtractor, {});
-  console.log('✅ Extractores cargados con Spotify → YouTube bridge + YouTube extractor');
+  console.log('✅ Extractores cargados');
 })();
 
 require('./events/welcome')(client);
