@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags, PermissionFlagsBits } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
 
 module.exports = {
@@ -15,6 +15,12 @@ module.exports = {
     const canal = interaction.member.voice.channel;
 
     if (!canal) return interaction.reply({ content: '❌ Debes estar en un canal de voz.', flags: MessageFlags.Ephemeral });
+
+    const perms = canal.permissionsFor(interaction.guild.members.me);
+    if (!perms.has(PermissionFlagsBits.Connect))
+      return interaction.reply({ content: '❌ No tengo permiso para entrar a ese canal de voz.', flags: MessageFlags.Ephemeral });
+    if (!perms.has(PermissionFlagsBits.Speak))
+      return interaction.reply({ content: '❌ No tengo permiso para hablar en ese canal de voz. Un admin debe darme el permiso **Hablar**.', flags: MessageFlags.Ephemeral });
 
     await interaction.deferReply();
 
