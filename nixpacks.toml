@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["liberation_ttf"]
+nixPkgs = ["liberation_ttf", "yt-dlp", "ffmpeg"]
 
 [phases.install]
 cmds = ["npm install"]

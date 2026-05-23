@@ -1,12 +1,13 @@
-const { BaseExtractor, Track, QueryType, Util } = require('discord-player');
-const YouTube = require('youtube-sr').default;
-const playdl   = require('play-dl');
+const { BaseExtractor, Track, QueryType } = require('discord-player');
+const YouTube   = require('youtube-sr').default;
+const YTDlpWrap = require('yt-dlp-wrap').default;
 
 class YouTubeExtractor extends BaseExtractor {
   static identifier = 'com.shadowbot.youtube';
 
   async activate() {
     this.protocols = ['ytsearch', 'youtube'];
+    this._ytdlp = new YTDlpWrap();
   }
 
   async validate(query, type) {
@@ -41,8 +42,13 @@ class YouTubeExtractor extends BaseExtractor {
   }
 
   async stream(track) {
-    const { stream } = await playdl.stream(track.url, { quality: 2 });
-    return stream;
+    return this._ytdlp.execStream([
+      track.url,
+      '-f', 'bestaudio/best',
+      '-o', '-',
+      '--no-playlist',
+      '-q', '--no-warnings',
+    ]);
   }
 
   createBridgeQuery(track) {

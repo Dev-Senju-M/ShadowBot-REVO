@@ -3,6 +3,8 @@ const { Client, GatewayIntentBits, Collection , MessageFlags} = require('discord
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const playdl = require('play-dl');
+const YTDlpWrap = require('yt-dlp-wrap').default;
+const ytdlp = new YTDlpWrap();
 const YouTubeExtractor = require('./utils/youtube-extractor');
 const fs = require('fs');
 const http = require('http');
@@ -32,7 +34,7 @@ const player = new Player(client);
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      // Spotify no provee audio directo; _ext._lib = spotify-url-info (ya inicializado)
+      // Spotify no provee audio directo — busca en YouTube via yt-dlp (más robusto en Railway)
       createStream: async (_ext, url) => {
         const data = await _ext._lib.getData(url).catch(() => null);
         if (!data) throw new Error(`No se pudo resolver datos de Spotify: ${url}`);
@@ -42,11 +44,14 @@ const player = new Player(client);
         const query  = [artist, title].filter(Boolean).join(' - ');
         if (!query) throw new Error(`Sin metadatos para: ${url}`);
 
-        const results = await playdl.search(query, { source: { youtube: 'video' }, limit: 1 });
-        if (!results.length) throw new Error(`Sin resultados en YouTube: "${query}"`);
-
-        console.log(`[música] Spotify→YT: "${query}" → ${results[0].title}`);
-        const { stream } = await playdl.stream(results[0].url, { quality: 2 });
+        console.log(`[música] Spotify→YT buscando: "${query}"`);
+        const stream = ytdlp.execStream([
+          `ytsearch1:${query}`,
+          '-f', 'bestaudio/best',
+          '-o', '-',
+          '--no-playlist',
+          '-q', '--no-warnings',
+        ]);
         return stream;
       },
     }

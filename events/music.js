@@ -25,8 +25,18 @@ module.exports = (client, player) => {
   });
 
   player.events.on('error', (queue, error) => {
-    console.error(error);
+    console.error('[música:error]', error);
     queue.metadata.channel.send(`❌ Error: ${error.message}`);
+  });
+
+  player.events.on('playerError', (queue, error) => {
+    console.error('[música:playerError]', error);
+    queue.metadata.channel.send(`❌ Error al reproducir: ${error.message}`);
+  });
+
+  player.events.on('playerSkip', (queue, track) => {
+    console.warn('[música:playerSkip] Canción saltada por error:', track.title);
+    queue.metadata.channel.send(`⚠️ No se pudo reproducir **${track.title}** — se saltó.`);
   });
 
   // Botones del panel
