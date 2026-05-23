@@ -4,17 +4,10 @@ const { QueueRepeatMode } = require('discord-player');
 module.exports = (client, player) => {
   player.events.on('playerStart', (queue, track) => {
     const embed = new EmbedBuilder()
-      .setColor('#9B59B6')
-      .setTitle('🎵 Ahora reproduciendo')
-      .setDescription(`**[${track.title}](${track.url})**`)
-      .setThumbnail(track.thumbnail)
-      .addFields(
-        { name: '👤 Artista', value: track.author, inline: true },
-        { name: '⏱️ Duración', value: track.duration, inline: true },
-        { name: '📥 Pedido por', value: `${track.requestedBy}`, inline: true },
-      )
-      .setFooter({ text: 'Santuario Mocho 🌑' })
-      .setTimestamp();
+      .setColor('#1DB954')
+      .setDescription(`**[${track.title}](${track.url})** by ${track.author}`)
+      .setAuthor({ name: 'Started playing', iconURL: 'https://i.imgur.com/vTgEVsb.png' })
+      .setThumbnail(track.thumbnail || null);
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
