@@ -109,12 +109,14 @@ client.on('interactionCreate', async interaction => {
   try {
     await command.execute(interaction);
   } catch (error) {
+    // 10062 = interaction expirada (bot se reinició o tardó > 3s) — ignorar silenciosamente
+    if (error.code === 10062) return;
     console.error(error);
     const payload = { content: '❌ Hubo un error.', flags: MessageFlags.Ephemeral };
     if (interaction.deferred || interaction.replied) {
-      await interaction.followUp(payload).catch(console.error);
+      await interaction.followUp(payload).catch(() => {});
     } else {
-      await interaction.reply(payload).catch(console.error);
+      await interaction.reply(payload).catch(() => {});
     }
   }
 });
