@@ -60,15 +60,17 @@ process.on('unhandledRejection', (err) => {
           if (!query) throw new Error(`Sin metadatos para: ${url}`);
 
           console.log(`[música] Buscando: "${query}"`);
-          const stream = ytdlp.execStream([
+          const output = await ytdlp.execPromise([
             `ytsearch1:${query}`,
-            '-f', 'bestaudio/best',
-            '-o', '-',
+            '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
+            '--get-url',
             '--no-playlist',
-            '-q', '--no-warnings',
+            '--no-warnings',
           ]);
-          stream.on('error', e => console.error('[música:stream]', e.message));
-          return stream;
+          const streamUrl = output.trim().split('\n')[0];
+          if (!streamUrl || !streamUrl.startsWith('http')) throw new Error('URL inválida de yt-dlp');
+          console.log('[música:spotify] URL OK');
+          return streamUrl;
         } catch (err) {
           console.error('[música:createStream]', err.message);
           throw err;

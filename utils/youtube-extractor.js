@@ -25,14 +25,12 @@ class YouTubeExtractor extends BaseExtractor {
   }
 
   async handle(query, context) {
-    // URL directa de video
     if (context.type === QueryType.YOUTUBE_VIDEO || context.type === QueryType.YOUTUBE) {
       const video = await YouTube.getVideo(query).catch(() => null);
       if (!video) return this.createResponse();
       return this.createResponse(null, [this._buildTrack(video, context)]);
     }
 
-    // Playlist
     if (context.type === QueryType.YOUTUBE_PLAYLIST) {
       const playlist = await YouTube.getPlaylist(query, { fetchAll: true }).catch(() => null);
       if (!playlist) return this.createResponse();
@@ -40,20 +38,29 @@ class YouTubeExtractor extends BaseExtractor {
       return this.createResponse(null, tracks);
     }
 
-    // Búsqueda de texto
     const results = await YouTube.search(query, { limit: 5, type: 'video' }).catch(() => []);
     if (!results.length) return this.createResponse();
     return this.createResponse(null, results.map(v => this._buildTrack(v, context)));
   }
 
   async stream(track) {
-    return this._ytdlp.execStream([
-      track.url,
-      '-f', 'bestaudio/best',
-      '-o', '-',
-      '--no-playlist',
-      '-q', '--no-warnings',
-    ]);
+    console.log(`[youtube:stream] ${track.title}`);
+    try {
+      const output = await this._ytdlp.execPromise([
+        track.url,
+        '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
+        '--get-url',
+        '--no-playlist',
+        '--no-warnings',
+      ]);
+      const url = output.trim().split('\n')[0];
+      if (!url || !url.startsWith('http')) throw new Error(`URL inválida: "${url}"`);
+      console.log('[youtube:stream] URL OK');
+      return url;
+    } catch (e) {
+      console.error('[youtube:stream]', e.message);
+      throw e;
+    }
   }
 
   createBridgeQuery(track) {
