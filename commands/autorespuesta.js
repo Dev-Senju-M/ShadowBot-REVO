@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -47,14 +47,14 @@ module.exports = {
             )
             .setFooter({ text: 'Santuario Mocho 🌑' })
         ],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
 
     } else if (sub === 'eliminar') {
       const trigger = interaction.options.getString('trigger');
 
       if (!data[trigger]) {
-        return interaction.reply({ content: `❌ No existe un trigger con ese nombre: \`${trigger}\``, ephemeral: true });
+        return interaction.reply({ content: `❌ No existe un trigger con ese nombre: \`${trigger}\``, flags: MessageFlags.Ephemeral });
       }
 
       delete data[trigger];
@@ -68,14 +68,14 @@ module.exports = {
             .setDescription(`El trigger \`${trigger}\` fue eliminado.`)
             .setFooter({ text: 'Santuario Mocho 🌑' })
         ],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
 
     } else if (sub === 'lista') {
       const triggers = Object.keys(data);
 
       if (triggers.length === 0) {
-        return interaction.reply({ content: '❌ No hay auto-respuestas configuradas.', ephemeral: true });
+        return interaction.reply({ content: '❌ No hay auto-respuestas configuradas.', flags: MessageFlags.Ephemeral });
       }
 
       const lista = triggers.map(t => `\`${t}\` → \`${data[t]}\``).join('\n');
@@ -89,7 +89,7 @@ module.exports = {
             .setFooter({ text: `${triggers.length} auto-respuestas • Santuario Mocho 🌑` })
             .setTimestamp()
         ],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
   }

@@ -26,7 +26,8 @@
       "Bash(node -e ' *)",
       "Bash(node --check index.js)",
       "Bash(node --check events/music.js)",
-      "Bash(node --check commands/shuffle.js)"
+      "Bash(node --check commands/shuffle.js)",
+      "Bash(node --check utils/youtube-extractor.js)"
     ]
   }
 }

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -27,7 +27,7 @@ module.exports = {
           .setFooter({ text: 'Santuario Mocho 🌑' })
           .setTimestamp()
       ],
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 };

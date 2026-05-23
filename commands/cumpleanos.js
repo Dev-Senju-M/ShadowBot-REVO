@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -40,9 +40,9 @@ module.exports = {
       const anio = interaction.options.getInteger('year');
       const ahora = new Date();
 
-      if (dia < 1 || dia > 31) return interaction.reply({ content: '❌ Invalid day (1-31).', ephemeral: true });
-      if (mes < 1 || mes > 12) return interaction.reply({ content: '❌ Invalid month (1-12).', ephemeral: true });
-      if (anio < 1900 || anio > ahora.getFullYear()) return interaction.reply({ content: `❌ Invalid year (1900-${ahora.getFullYear()}).`, ephemeral: true });
+      if (dia < 1 || dia > 31) return interaction.reply({ content: '❌ Invalid day (1-31).', flags: MessageFlags.Ephemeral });
+      if (mes < 1 || mes > 12) return interaction.reply({ content: '❌ Invalid month (1-12).', flags: MessageFlags.Ephemeral });
+      if (anio < 1900 || anio > ahora.getFullYear()) return interaction.reply({ content: `❌ Invalid year (1900-${ahora.getFullYear()}).`, flags: MessageFlags.Ephemeral });
 
       // Calcular edad actual
       const edad = calcularEdad(dia, mes, anio);
@@ -62,11 +62,11 @@ module.exports = {
         .setFooter({ text: 'Santuario Mocho 🌑' })
         .setTimestamp();
 
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 
     } else if (sub === 'view') {
       const data = db.usuarios[interaction.user.id];
-      if (!data) return interaction.reply({ content: '❌ You have no birthday registered. Use `/birthday register`.', ephemeral: true });
+      if (!data) return interaction.reply({ content: '❌ You have no birthday registered. Use `/birthday register`.', flags: MessageFlags.Ephemeral });
 
       const edad = calcularEdad(data.dia, data.mes, data.anio);
       const proxCumple = proximoCumple(data.dia, data.mes);
@@ -82,11 +82,11 @@ module.exports = {
         .setFooter({ text: 'Santuario Mocho 🌑' })
         .setTimestamp();
 
-      await interaction.reply({ embeds: [embed], ephemeral: true });
+      await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
 
     } else if (sub === 'list') {
       const usuarios = Object.entries(db.usuarios);
-      if (usuarios.length === 0) return interaction.reply({ content: '❌ No birthdays registered yet.', ephemeral: true });
+      if (usuarios.length === 0) return interaction.reply({ content: '❌ No birthdays registered yet.', flags: MessageFlags.Ephemeral });
 
       const sorted = usuarios.sort((a, b) => {
         if (a[1].mes !== b[1].mes) return a[1].mes - b[1].mes;
@@ -109,7 +109,7 @@ module.exports = {
 
     } else if (sub === 'channel') {
       if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-        return interaction.reply({ content: '❌ Only administrators can set the birthday channel.', ephemeral: true });
+        return interaction.reply({ content: '❌ Only administrators can set the birthday channel.', flags: MessageFlags.Ephemeral });
       }
 
       const canal = interaction.options.getChannel('channel');
@@ -124,7 +124,7 @@ module.exports = {
             .setDescription(`Birthday messages will be sent in <#${canal.id}> 🎂`)
             .setFooter({ text: 'Santuario Mocho 🌑' })
         ],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
   }

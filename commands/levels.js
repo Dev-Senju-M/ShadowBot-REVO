@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -101,7 +101,7 @@ module.exports = {
         })
         .slice(0, 10);
 
-      if (usuarios.length === 0) return interaction.reply({ content: '❌ No data yet.', ephemeral: true });
+      if (usuarios.length === 0) return interaction.reply({ content: '❌ No data yet.', flags: MessageFlags.Ephemeral });
 
       const medals = ['🥇', '🥈', '🥉'];
       const lista = usuarios.map(([id, data], i) => {
@@ -120,7 +120,7 @@ module.exports = {
 
     // — LIST —
     } else if (sub === 'list') {
-      if (db.niveles.length === 0) return interaction.reply({ content: '❌ No levels configured yet.', ephemeral: true });
+      if (db.niveles.length === 0) return interaction.reply({ content: '❌ No levels configured yet.', flags: MessageFlags.Ephemeral });
 
       const sorted = db.niveles.sort((a, b) => a.nivel - b.nivel);
       const lista = sorted.map(n =>
@@ -139,7 +139,7 @@ module.exports = {
     // — ADD LEVEL —
     } else if (sub === 'addlevel') {
       if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-        return interaction.reply({ content: '❌ Admins only.', ephemeral: true });
+        return interaction.reply({ content: '❌ Admins only.', flags: MessageFlags.Ephemeral });
       }
 
       const nivel = interaction.options.getInteger('level');
@@ -149,7 +149,7 @@ module.exports = {
       const nombre = interaction.options.getString('name');
 
       if (db.niveles.find(n => n.nivel === nivel)) {
-        return interaction.reply({ content: `❌ Level ${nivel} already exists.`, ephemeral: true });
+        return interaction.reply({ content: `❌ Level ${nivel} already exists.`, flags: MessageFlags.Ephemeral });
       }
 
       db.niveles.push({ nivel, nombre, rol_id: rol.id, horas_voz: horas, mensajes });
@@ -173,23 +173,23 @@ module.exports = {
     // — REMOVE LEVEL —
     } else if (sub === 'removelevel') {
       if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-        return interaction.reply({ content: '❌ Admins only.', ephemeral: true });
+        return interaction.reply({ content: '❌ Admins only.', flags: MessageFlags.Ephemeral });
       }
 
       const nivel = interaction.options.getInteger('level');
       const index = db.niveles.findIndex(n => n.nivel === nivel);
 
-      if (index === -1) return interaction.reply({ content: `❌ Level ${nivel} not found.`, ephemeral: true });
+      if (index === -1) return interaction.reply({ content: `❌ Level ${nivel} not found.`, flags: MessageFlags.Ephemeral });
 
       db.niveles.splice(index, 1);
       saveDB(db);
 
-      await interaction.reply({ content: `✅ Level ${nivel} removed.`, ephemeral: true });
+      await interaction.reply({ content: `✅ Level ${nivel} removed.`, flags: MessageFlags.Ephemeral });
 
     // — SET CHANNEL —
     } else if (sub === 'setchannel') {
       if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-        return interaction.reply({ content: '❌ Admins only.', ephemeral: true });
+        return interaction.reply({ content: '❌ Admins only.', flags: MessageFlags.Ephemeral });
       }
 
       const canal = interaction.options.getChannel('channel');
@@ -204,13 +204,13 @@ module.exports = {
             .setDescription(`Level-up notifications will be sent to <#${canal.id}>`)
             .setFooter({ text: 'Santuario Mocho 🌑' })
         ],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
 
     // — GIVE —
     } else if (sub === 'give') {
       if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-        return interaction.reply({ content: '❌ Admins only.', ephemeral: true });
+        return interaction.reply({ content: '❌ Admins only.', flags: MessageFlags.Ephemeral });
       }
 
       const target = interaction.options.getUser('user');
@@ -251,7 +251,7 @@ module.exports = {
             )
             .setFooter({ text: 'Santuario Mocho 🌑' })
         ],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
   }

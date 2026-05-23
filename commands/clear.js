@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const { sendModLog } = require('../modlog');
 
 module.exports = {
@@ -10,9 +10,9 @@ module.exports = {
 
   async execute(interaction) {
     const cantidad = interaction.options.getInteger('cantidad');
-    if (cantidad < 1 || cantidad > 100) return interaction.reply({ content: '❌ Pon un número entre 1 y 100.', ephemeral: true });
+    if (cantidad < 1 || cantidad > 100) return interaction.reply({ content: '❌ Pon un número entre 1 y 100.', flags: MessageFlags.Ephemeral });
     const eliminados = await interaction.channel.bulkDelete(cantidad, true);
-    await interaction.reply({ content: `🗑️ ${eliminados.size} mensajes eliminados.`, ephemeral: true });
+    await interaction.reply({ content: `🗑️ ${eliminados.size} mensajes eliminados.`, flags: MessageFlags.Ephemeral });
 
     await sendModLog(interaction.guild, new EmbedBuilder()
       .setColor('#95A5A6')

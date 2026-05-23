@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -48,7 +48,7 @@ module.exports = {
     // — ADD —
     if (sub === 'add') {
       if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-        return interaction.reply({ content: '❌ Admins only.', ephemeral: true });
+        return interaction.reply({ content: '❌ Admins only.', flags: MessageFlags.Ephemeral });
       }
 
       const rol = interaction.options.getRole('role');
@@ -59,7 +59,7 @@ module.exports = {
       if (parsed.horas_voz === 0 && parsed.mensajes === 0) {
         return interaction.reply({
           content: '❌ Could not parse requirement. Use formats like:\n`10h de voz`, `500 mensajes`, `10h y 500 mensajes`',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         });
       }
 
@@ -103,13 +103,13 @@ module.exports = {
     // — REMOVE —
     } else if (sub === 'remove') {
       if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-        return interaction.reply({ content: '❌ Admins only.', ephemeral: true });
+        return interaction.reply({ content: '❌ Admins only.', flags: MessageFlags.Ephemeral });
       }
 
       const rol = interaction.options.getRole('role');
       const index = db.niveles.findIndex(n => n.rol_id === rol.id);
 
-      if (index === -1) return interaction.reply({ content: '❌ No achievement found for that role.', ephemeral: true });
+      if (index === -1) return interaction.reply({ content: '❌ No achievement found for that role.', flags: MessageFlags.Ephemeral });
 
       const nombre = db.niveles[index].nombre;
       db.niveles.splice(index, 1);
@@ -123,13 +123,13 @@ module.exports = {
             .setDescription(`**${nombre}** linked to <@&${rol.id}> has been removed.`)
             .setFooter({ text: 'Santuario Mocho 🌑' })
         ],
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
 
     // — LIST —
     } else if (sub === 'list') {
       if (!db.niveles || db.niveles.length === 0) {
-        return interaction.reply({ content: '❌ No achievements configured yet.', ephemeral: true });
+        return interaction.reply({ content: '❌ No achievements configured yet.', flags: MessageFlags.Ephemeral });
       }
 
       const lista = db.niveles.map(n =>

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder , MessageFlags} = require('discord.js');
 const { useQueue, QueueRepeatMode } = require('discord-player');
 
 module.exports = {
@@ -17,7 +17,7 @@ module.exports = {
 
   async execute(interaction) {
     const queue = useQueue(interaction.guild.id);
-    if (!queue) return interaction.reply({ content: '❌ No hay música reproduciéndose.', ephemeral: true });
+    if (!queue) return interaction.reply({ content: '❌ No hay música reproduciéndose.', flags: MessageFlags.Ephemeral });
 
     const modo = interaction.options.getString('modo');
     const modos = { track: QueueRepeatMode.TRACK, queue: QueueRepeatMode.QUEUE, off: QueueRepeatMode.OFF };

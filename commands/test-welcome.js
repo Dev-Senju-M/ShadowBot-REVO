@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -14,11 +14,11 @@ module.exports = {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
     if (!config.welcomeChannel) {
-      return interaction.reply({ content: '❌ Primero configura el canal con `/setup-welcome`', ephemeral: true });
+      return interaction.reply({ content: '❌ Primero configura el canal con `/setup-welcome`', flags: MessageFlags.Ephemeral });
     }
 
     const canal = interaction.guild.channels.cache.get(config.welcomeChannel);
-    if (!canal) return interaction.reply({ content: '❌ No encuentro el canal configurado.', ephemeral: true });
+    if (!canal) return interaction.reply({ content: '❌ No encuentro el canal configurado.', flags: MessageFlags.Ephemeral });
 
     const member = interaction.member;
 
@@ -43,6 +43,6 @@ module.exports = {
       }]
     });
 
-    await interaction.reply({ content: `✅ Mensaje de prueba enviado a <#${canal.id}>`, ephemeral: true });
+    await interaction.reply({ content: `✅ Mensaje de prueba enviado a <#${canal.id}>`, flags: MessageFlags.Ephemeral });
   }
 };

@@ -1,8 +1,9 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection , MessageFlags} = require('discord.js');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const playdl = require('play-dl');
+const YouTubeExtractor = require('./utils/youtube-extractor');
 const fs = require('fs');
 const http = require('http');
 
@@ -31,17 +32,27 @@ const player = new Player(client);
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      // Spotify no provee audio directo; se busca el track en YouTube via play-dl
-      createStream: async (_ext, track) => {
-        const query = `${track.author} ${track.title}`;
+      // Spotify no provee audio directo; _ext._lib = spotify-url-info (ya inicializado)
+      createStream: async (_ext, url) => {
+        const data = await _ext._lib.getData(url).catch(() => null);
+        if (!data) throw new Error(`No se pudo resolver datos de Spotify: ${url}`);
+
+        const artist = data.artists?.[0]?.name ?? data.artist ?? '';
+        const title  = data.title ?? data.name ?? '';
+        const query  = [artist, title].filter(Boolean).join(' - ');
+        if (!query) throw new Error(`Sin metadatos para: ${url}`);
+
         const results = await playdl.search(query, { source: { youtube: 'video' }, limit: 1 });
-        if (!results.length) throw new Error(`No se encontró audio para: ${query}`);
+        if (!results.length) throw new Error(`Sin resultados en YouTube: "${query}"`);
+
+        console.log(`[música] Spotify→YT: "${query}" → ${results[0].title}`);
         const { stream } = await playdl.stream(results[0].url, { quality: 2 });
         return stream;
       },
     }
   });
-  console.log('✅ Extractores cargados con Spotify → YouTube bridge');
+  await player.extractors.register(YouTubeExtractor, {});
+  console.log('✅ Extractores cargados con Spotify → YouTube bridge + YouTube extractor');
 })();
 
 require('./events/welcome')(client);
@@ -94,7 +105,7 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    const payload = { content: '❌ Hubo un error.', ephemeral: true };
+    const payload = { content: '❌ Hubo un error.', flags: MessageFlags.Ephemeral };
     if (interaction.deferred || interaction.replied) {
       await interaction.followUp(payload).catch(console.error);
     } else {

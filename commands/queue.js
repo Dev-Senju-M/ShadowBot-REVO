@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder , MessageFlags} = require('discord.js');
 const { useQueue } = require('discord-player');
 
 module.exports = {
@@ -8,7 +8,7 @@ module.exports = {
 
   async execute(interaction) {
     const queue = useQueue(interaction.guild.id);
-    if (!queue || !queue.isPlaying()) return interaction.reply({ content: '❌ No hay música reproduciéndose.', ephemeral: true });
+    if (!queue || !queue.isPlaying()) return interaction.reply({ content: '❌ No hay música reproduciéndose.', flags: MessageFlags.Ephemeral });
 
     const tracks = queue.tracks.toArray().slice(0, 10);
     const lista = tracks.length

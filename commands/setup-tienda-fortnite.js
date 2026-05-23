@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChannelType , MessageFlags} = require('discord.js');
 const fs   = require('fs');
 const path = require('path');
 
@@ -17,7 +17,7 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Resolver canal desde caché del guild (evita el partial channel)
     const canalOption = interaction.options.getChannel('canal', true);
@@ -25,7 +25,7 @@ module.exports = {
       ?? await interaction.guild.channels.fetch(canalOption.id).catch(() => null);
 
     if (!canal) {
-      return interaction.followUp({ content: '❌ No pude resolver el canal. Intenta de nuevo.', ephemeral: true });
+      return interaction.followUp({ content: '❌ No pude resolver el canal. Intenta de nuevo.', flags: MessageFlags.Ephemeral });
     }
 
     // Verificar permisos del bot en el canal
@@ -33,7 +33,7 @@ module.exports = {
     if (!canal.permissionsFor(me).has(['SendMessages', 'EmbedLinks', 'AttachFiles'])) {
       return interaction.followUp({
         content: `❌ No tengo permisos para enviar mensajes en <#${canal.id}>. Necesito: **Enviar mensajes**, **Insertar enlaces**, **Adjuntar archivos**.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -44,7 +44,7 @@ module.exports = {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     } catch (err) {
       console.error('[setup-tienda-fortnite] Error guardando config:', err.message);
-      return interaction.followUp({ content: '❌ Error guardando la configuración.', ephemeral: true });
+      return interaction.followUp({ content: '❌ Error guardando la configuración.', flags: MessageFlags.Ephemeral });
     }
 
     // Confirmar al admin
@@ -56,7 +56,7 @@ module.exports = {
       .setFooter({ text: 'ShadowBot • Fortnite Shop' })
       .setTimestamp();
 
-    await interaction.followUp({ embeds: [confirmEmbed], ephemeral: true });
+    await interaction.followUp({ embeds: [confirmEmbed], flags: MessageFlags.Ephemeral });
 
     // Enviar la tienda actual al canal inmediatamente
     if (process.env.FNBR_API_KEY) {

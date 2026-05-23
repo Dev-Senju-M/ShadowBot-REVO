@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
 const { sendModLog } = require('../modlog');
 
 module.exports = {
@@ -12,8 +12,8 @@ module.exports = {
   async execute(interaction) {
     const target = interaction.options.getMember('usuario');
     const razon = interaction.options.getString('razon') ?? 'Sin razón especificada';
-    if (!target) return interaction.reply({ content: '❌ Ese usuario no está en el servidor.', ephemeral: true });
-    if (!target.kickable) return interaction.reply({ content: '❌ No puedo expulsar a este usuario.', ephemeral: true });
+    if (!target) return interaction.reply({ content: '❌ Ese usuario no está en el servidor.', flags: MessageFlags.Ephemeral });
+    if (!target.kickable) return interaction.reply({ content: '❌ No puedo expulsar a este usuario.', flags: MessageFlags.Ephemeral });
     await target.kick(razon);
     await interaction.reply(`👢 **${target.user.tag}** fue expulsado. Razón: ${razon}`);
 

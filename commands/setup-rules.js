@@ -5,7 +5,7 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle
-} = require('discord.js');
+, MessageFlags} = require('discord.js');
 
 const RULES_CHANNEL_ID = '750041400124637336';
 const VERIFY_ROLE_ID = '874420788915212288';
@@ -23,7 +23,7 @@ module.exports = {
 
   async execute(interaction) {
     const canal = interaction.guild.channels.cache.get(RULES_CHANNEL_ID);
-    if (!canal) return interaction.reply({ content: '❌ No encuentro el canal de reglas.', ephemeral: true });
+    if (!canal) return interaction.reply({ content: '❌ No encuentro el canal de reglas.', flags: MessageFlags.Ephemeral });
 
     const embed = new EmbedBuilder()
       .setColor('#9B59B6')
@@ -85,6 +85,6 @@ module.exports = {
     );
 
     await canal.send({ embeds: [embed], components: [rowLinks] });
-    await interaction.reply({ content: '✅ Reglas publicadas correctamente!', ephemeral: true });
+    await interaction.reply({ content: '✅ Reglas publicadas correctamente!', flags: MessageFlags.Ephemeral });
   }
 };

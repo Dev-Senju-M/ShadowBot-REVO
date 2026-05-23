@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle , MessageFlags} = require('discord.js');
 const { QueueRepeatMode } = require('discord-player');
 
 module.exports = (client, player) => {
@@ -42,25 +42,25 @@ module.exports = (client, player) => {
     if (!interaction.customId.startsWith('music_')) return;
 
     const queue = player.nodes.get(interaction.guild.id);
-    if (!queue) return interaction.reply({ content: '❌ No hay música reproduciéndose.', ephemeral: true });
+    if (!queue) return interaction.reply({ content: '❌ No hay música reproduciéndose.', flags: MessageFlags.Ephemeral });
 
     switch (interaction.customId) {
       case 'music_pause':
         if (queue.node.isPaused()) {
           queue.node.resume();
-          await interaction.reply({ content: '▶️ Música reanudada.', ephemeral: true });
+          await interaction.reply({ content: '▶️ Música reanudada.', flags: MessageFlags.Ephemeral });
         } else {
           queue.node.pause();
-          await interaction.reply({ content: '⏸️ Música pausada.', ephemeral: true });
+          await interaction.reply({ content: '⏸️ Música pausada.', flags: MessageFlags.Ephemeral });
         }
         break;
       case 'music_skip':
         queue.node.skip();
-        await interaction.reply({ content: '⏭️ Canción saltada.', ephemeral: true });
+        await interaction.reply({ content: '⏭️ Canción saltada.', flags: MessageFlags.Ephemeral });
         break;
       case 'music_stop':
         queue.delete();
-        await interaction.reply({ content: '⏹️ Música detenida.', ephemeral: true });
+        await interaction.reply({ content: '⏹️ Música detenida.', flags: MessageFlags.Ephemeral });
         break;
       case 'music_loop': {
         // Ciclo: OFF(0) → TRACK(1) → QUEUE(2) → OFF(0)
@@ -71,15 +71,15 @@ module.exports = (client, player) => {
           [QueueRepeatMode.TRACK]: '🔁 Loop de canción activado.',
           [QueueRepeatMode.QUEUE]: '🔂 Loop de cola activado.',
         };
-        await interaction.reply({ content: loopLabels[nextMode], ephemeral: true });
+        await interaction.reply({ content: loopLabels[nextMode], flags: MessageFlags.Ephemeral });
         break;
       }
       case 'music_prev':
         if (!queue.history.tracks.size) {
-          return interaction.reply({ content: '❌ No hay canciones anteriores.', ephemeral: true });
+          return interaction.reply({ content: '❌ No hay canciones anteriores.', flags: MessageFlags.Ephemeral });
         }
         await queue.history.previous();
-        await interaction.reply({ content: '⏮️ Canción anterior.', ephemeral: true });
+        await interaction.reply({ content: '⏮️ Canción anterior.', flags: MessageFlags.Ephemeral });
         break;
     }
   });

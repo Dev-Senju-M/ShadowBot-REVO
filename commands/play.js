@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder , MessageFlags} = require('discord.js');
 const { useMainPlayer } = require('discord-player');
 
 module.exports = {
@@ -14,7 +14,7 @@ module.exports = {
     const player = useMainPlayer();
     const canal = interaction.member.voice.channel;
 
-    if (!canal) return interaction.reply({ content: '❌ Debes estar en un canal de voz.', ephemeral: true });
+    if (!canal) return interaction.reply({ content: '❌ Debes estar en un canal de voz.', flags: MessageFlags.Ephemeral });
 
     await interaction.deferReply();
 
