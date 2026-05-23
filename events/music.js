@@ -1,4 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { QueueRepeatMode } = require('discord-player');
 
 module.exports = (client, player) => {
   player.events.on('playerStart', (queue, track) => {
@@ -62,9 +63,15 @@ module.exports = (client, player) => {
         await interaction.reply({ content: '⏹️ Música detenida.', ephemeral: true });
         break;
       case 'music_loop': {
-        const mode = queue.repeatMode === 0 ? 1 : 0;
-        queue.setRepeatMode(mode);
-        await interaction.reply({ content: mode === 1 ? '🔁 Loop activado.' : '➡️ Loop desactivado.', ephemeral: true });
+        // Ciclo: OFF(0) → TRACK(1) → QUEUE(2) → OFF(0)
+        const nextMode = (queue.repeatMode + 1) % 3;
+        queue.setRepeatMode(nextMode);
+        const loopLabels = {
+          [QueueRepeatMode.OFF]: '➡️ Loop desactivado.',
+          [QueueRepeatMode.TRACK]: '🔁 Loop de canción activado.',
+          [QueueRepeatMode.QUEUE]: '🔂 Loop de cola activado.',
+        };
+        await interaction.reply({ content: loopLabels[nextMode], ephemeral: true });
         break;
       }
       case 'music_prev':

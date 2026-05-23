@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
+const playdl = require('play-dl');
 const fs = require('fs');
 const http = require('http');
 
@@ -30,10 +31,17 @@ const player = new Player(client);
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      strategy: 'AudioProvider'
+      // Spotify no provee audio directo; se busca el track en YouTube via play-dl
+      createStream: async (_ext, track) => {
+        const query = `${track.author} ${track.title}`;
+        const results = await playdl.search(query, { source: { youtube: 'video' }, limit: 1 });
+        if (!results.length) throw new Error(`No se encontró audio para: ${query}`);
+        const { stream } = await playdl.stream(results[0].url, { quality: 2 });
+        return stream;
+      },
     }
   });
-  console.log('✅ Extractores cargados con Spotify');
+  console.log('✅ Extractores cargados con Spotify → YouTube bridge');
 })();
 
 require('./events/welcome')(client);
