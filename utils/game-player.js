@@ -48,9 +48,9 @@ async function reproducirFragmento(voiceChannel, textChannel, cancion) {
         };
     }
 
-    const resultado = await player.search(cancion.youtubeUrl, { requestedBy: null });
+    const resultado = await player.search(cancion.busqueda, { requestedBy: voiceChannel.client.user });
     if (!resultado || !resultado.tracks.length) {
-        throw new Error(`No se encontró audio para la canción ${cancion.id}`);
+        throw new Error(`No se encontró audio para la canción ${cancion.id} (búsqueda: "${cancion.busqueda}")`);
     }
     const trackJuego = resultado.tracks[0];
 

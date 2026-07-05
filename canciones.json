@@ -1,35 +1,35 @@
 [
   {
     "id": "001",
-    "youtubeUrl": "https://www.youtube.com/watch?v=fJ9rUzIMcZQ",
+    "busqueda": "Queen Bohemian Rhapsody official",
     "inicio": 45,
     "duracion": 12,
     "respuestasValidas": ["bohemian rhapsody"]
   },
   {
     "id": "002",
-    "youtubeUrl": "https://www.youtube.com/watch?v=09R8_2nJtjg",
+    "busqueda": "Fall Out Boy Sugar We're Goin Down official",
     "inicio": 30,
     "duracion": 12,
     "respuestasValidas": ["sugar", "sugar we're going down"]
   },
   {
     "id": "003",
-    "youtubeUrl": "https://www.youtube.com/watch?v=hTWKbfoikeg",
+    "busqueda": "Nirvana Smells Like Teen Spirit official",
     "inicio": 20,
     "duracion": 12,
     "respuestasValidas": ["smells like teen spirit"]
   },
   {
     "id": "004",
-    "youtubeUrl": "https://www.youtube.com/watch?v=fCyQ0p9YhGs",
+    "busqueda": "AC/DC Thunderstruck official",
     "inicio": 15,
     "duracion": 12,
     "respuestasValidas": ["thunderstruck"]
   },
   {
     "id": "005",
-    "youtubeUrl": "https://www.youtube.com/watch?v=eVTXPUF4Oz4",
+    "busqueda": "The Weeknd Blinding Lights official",
     "inicio": 40,
     "duracion": 12,
     "respuestasValidas": ["blinding lights"]
