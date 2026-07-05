@@ -3,18 +3,21 @@ const { QueueRepeatMode } = require('discord-player');
 
 module.exports = (client, player) => {
   player.events.on('playerStart', (queue, track) => {
+    // No anunciar "Started playing" durante las rondas de /adivina (revelaría el título)
+    if (queue.metadata?.isGameRound) return;
+
     const embed = new EmbedBuilder()
-      .setColor('#1DB954')
-      .setDescription(`**[${track.title}](${track.url})** by ${track.author}`)
-      .setAuthor({ name: 'Started playing', iconURL: 'https://i.imgur.com/vTgEVsb.png' })
-      .setThumbnail(track.thumbnail || null);
+        .setColor('#1DB954')
+        .setDescription(`**[${track.title}](${track.url})** by ${track.author}`)
+        .setAuthor({ name: 'Started playing', iconURL: 'https://i.imgur.com/vTgEVsb.png' })
+        .setThumbnail(track.thumbnail || null);
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Success),
     );
 
     queue.metadata.channel.send({ embeds: [embed], components: [row] });
@@ -46,6 +49,11 @@ module.exports = (client, player) => {
 
     const queue = player.nodes.get(interaction.guild.id);
     if (!queue) return interaction.reply({ content: '❌ No hay música reproduciéndose.', flags: MessageFlags.Ephemeral });
+
+    // Evita que los botones de música interfieran con una ronda del juego en curso
+    if (queue.metadata?.isGameRound) {
+      return interaction.reply({ content: '❌ Hay una partida de /adivina en curso, espera a que termine.', flags: MessageFlags.Ephemeral });
+    }
 
     switch (interaction.customId) {
       case 'music_pause':

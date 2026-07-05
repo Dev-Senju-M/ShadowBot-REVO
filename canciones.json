@@ -1,0 +1,37 @@
+[
+  {
+    "id": "001",
+    "youtubeUrl": "https://www.youtube.com/watch?v=fJ9rUzIMcZQ",
+    "inicio": 45,
+    "duracion": 12,
+    "respuestasValidas": ["bohemian rhapsody"]
+  },
+  {
+    "id": "002",
+    "youtubeUrl": "https://www.youtube.com/watch?v=09R8_2nJtjg",
+    "inicio": 30,
+    "duracion": 12,
+    "respuestasValidas": ["sugar", "sugar we're going down"]
+  },
+  {
+    "id": "003",
+    "youtubeUrl": "https://www.youtube.com/watch?v=hTWKbfoikeg",
+    "inicio": 20,
+    "duracion": 12,
+    "respuestasValidas": ["smells like teen spirit"]
+  },
+  {
+    "id": "004",
+    "youtubeUrl": "https://www.youtube.com/watch?v=fCyQ0p9YhGs",
+    "inicio": 15,
+    "duracion": 12,
+    "respuestasValidas": ["thunderstruck"]
+  },
+  {
+    "id": "005",
+    "youtubeUrl": "https://www.youtube.com/watch?v=eVTXPUF4Oz4",
+    "inicio": 40,
+    "duracion": 12,
+    "respuestasValidas": ["blinding lights"]
+  }
+]
