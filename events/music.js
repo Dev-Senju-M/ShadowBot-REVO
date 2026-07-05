@@ -24,6 +24,7 @@ module.exports = (client, player) => {
   });
 
   player.events.on('emptyQueue', (queue) => {
+    if (queue.metadata?.isGameRound) return;
     queue.metadata.channel.send('✅ Cola vacía. *El Santuario vuelve al silencio...* 🌑');
   });
 

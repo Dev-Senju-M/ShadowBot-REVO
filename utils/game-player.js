@@ -89,7 +89,6 @@ async function reproducirFragmento(voiceChannel, textChannel, cancion) {
 async function detenerFragmento(queue, resumeState) {
     if (!queue) return;
     const player = useMainPlayer();
-    queue.metadata.isGameRound = false;
 
     if (resumeState) {
         queue.insertTrack(resumeState.track, 0);
@@ -98,11 +97,15 @@ async function detenerFragmento(queue, resumeState) {
         if (resumeState.positionMs > 1000) {
             queue.node.seek(resumeState.positionMs);
         }
+        queue.metadata.isGameRound = false; // ya se restauró la música normal, vuelven los anuncios
     } else if (queue.tracks.size === 0) {
-        // No había música antes y no quedó nada más en cola: se termina la sesión de audio
+        // No había música antes y no quedó nada más en cola: se termina la sesión de audio.
+        // isGameRound se queda en true a propósito, para que el emptyQueue de este borrado
+        // no dispare el aviso de "Cola vacía" de events/music.js.
         queue.delete();
     } else {
         queue.node.skip();
+        queue.metadata.isGameRound = false;
     }
 }
 
