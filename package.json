@@ -36,6 +36,7 @@
     "play-dl": "^1.9.7",
     "spotify-web-api-node": "^5.0.2",
     "youtube-sr": "^4.3.12",
-    "yt-dlp-wrap": "^2.3.12"
+    "yt-dlp-wrap": "^2.3.12",
+    "ytmusic-api": "^5.3.1"
   }
 }

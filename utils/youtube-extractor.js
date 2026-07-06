@@ -5,6 +5,7 @@ const YTDlpWrap = require('yt-dlp-wrap').default;
 
 const LOCAL_YTDLP = path.join(process.cwd(), 'yt-dlp');
 const ytdlpBin = fs.existsSync(LOCAL_YTDLP) ? LOCAL_YTDLP : undefined;
+const COOKIES_PATH = path.join(process.cwd(), 'cookies.txt');
 
 class YouTubeExtractor extends BaseExtractor {
   static identifier = 'com.shadowbot.youtube';
@@ -23,15 +24,16 @@ class YouTubeExtractor extends BaseExtractor {
     ].includes(type);
   }
 
-  // Ejecuta yt-dlp con --dump-json (agregando el proxy si está configurado) y
-  // devuelve un array de objetos parseados. Todo el metadata pasa por aquí,
-  // por el mismo camino (y el mismo proxy) que el audio.
+  // Agrega proxy y/o cookies a un set de argumentos de yt-dlp, si están configurados
+  _extras() {
+    const extras = [];
+    if (process.env.WARP_PROXY_URL) extras.push('--proxy', process.env.WARP_PROXY_URL);
+    if (fs.existsSync(COOKIES_PATH)) extras.push('--cookies', COOKIES_PATH);
+    return extras;
+  }
+
   async _ytdlpJson(args) {
-    const argsFinal = [...args];
-    if (process.env.WARP_PROXY_URL) {
-      argsFinal.push('--proxy', process.env.WARP_PROXY_URL);
-    }
-    const output = await this._ytdlp.execPromise(argsFinal);
+    const output = await this._ytdlp.execPromise([...args, ...this._extras()]);
     return output
         .trim()
         .split('\n')
@@ -60,7 +62,6 @@ class YouTubeExtractor extends BaseExtractor {
         return this.createResponse(null, datos.map(v => this._buildTrack(v, context)));
       }
 
-      // Búsqueda por texto
       const datos = await this._ytdlpJson([
         `ytsearch1:${query}`, '--dump-json', '--no-warnings', '--skip-download',
       ]);
@@ -72,28 +73,30 @@ class YouTubeExtractor extends BaseExtractor {
     }
   }
 
+  // CLAVE: en vez de pedirle a yt-dlp solo la URL (--get-url) y dejar que discord-player
+  // la descargue por su cuenta (sin proxy ni cookies), hacemos que yt-dlp DESCARGUE el
+  // audio real y lo mande por stdout — así el proxy/cookies protegen la descarga completa,
+  // no solo la consulta de metadata.
   async stream(track) {
     console.log(`[youtube:stream] ${track.title}`);
-    try {
-      const args = [
-        track.url,
-        '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
-        '--get-url',
-        '--no-playlist',
-        '--no-warnings',
-      ];
-      if (process.env.WARP_PROXY_URL) {
-        args.push('--proxy', process.env.WARP_PROXY_URL);
-      }
-      const output = await this._ytdlp.execPromise(args);
-      const url = output.trim().split('\n')[0];
-      if (!url || !url.startsWith('http')) throw new Error(`URL inválida: "${url}"`);
-      console.log('[youtube:stream] URL OK' + (process.env.WARP_PROXY_URL ? ' (vía proxy)' : ''));
-      return url;
-    } catch (e) {
-      console.error('[youtube:stream]', e.message);
-      throw e;
-    }
+    const args = [
+      track.url,
+      '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
+      '-o', '-',
+      '--no-playlist',
+      '--no-warnings',
+      '--quiet',
+      ...this._extras(),
+    ];
+
+    const flujo = this._ytdlp.execStream(args);
+    flujo.on('error', err => console.error('[youtube:stream:error]', err.message));
+
+    console.log('[youtube:stream] descargando vía yt-dlp' +
+        (process.env.WARP_PROXY_URL ? ' + proxy' : '') +
+        (fs.existsSync(COOKIES_PATH) ? ' + cookies' : ''));
+
+    return flujo;
   }
 
   createBridgeQuery(track) {

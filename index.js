@@ -14,6 +14,20 @@ const ytdlp = new YTDlpWrap(ytdlpBin);
 const fs = require('fs');
 const http = require('http');
 
+// Si hay cookies de YouTube en base64 (variable de entorno), las escribimos como
+// archivo real para que yt-dlp las use con --cookies
+const COOKIES_PATH = path.join(process.cwd(), 'cookies.txt');
+if (process.env.YOUTUBE_COOKIES_B64) {
+  try {
+    fs.writeFileSync(COOKIES_PATH, Buffer.from(process.env.YOUTUBE_COOKIES_B64, 'base64'));
+    console.log('[cookies] ✅ cookies.txt generado desde YOUTUBE_COOKIES_B64');
+  } catch (err) {
+    console.error('[cookies] ❌ No se pudo generar cookies.txt:', err.message);
+  }
+} else {
+  console.log('[cookies] ⚠️ YOUTUBE_COOKIES_B64 no definida, yt-dlp correrá sin cookies');
+}
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -69,6 +83,9 @@ process.on('unhandledRejection', (err) => {
           ];
           if (process.env.WARP_PROXY_URL) {
             ytdlpArgs.push('--proxy', process.env.WARP_PROXY_URL);
+          }
+          if (fs.existsSync(COOKIES_PATH)) {
+            ytdlpArgs.push('--cookies', COOKIES_PATH);
           }
           const output = await ytdlp.execPromise(ytdlpArgs);
           const streamUrl = output.trim().split('\n')[0];
