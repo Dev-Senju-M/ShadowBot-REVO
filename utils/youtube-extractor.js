@@ -1,7 +1,6 @@
 const path = require('path');
 const fs   = require('fs');
 const { BaseExtractor, Track, QueryType } = require('discord-player');
-const YouTube   = require('youtube-sr').default;
 const YTDlpWrap = require('yt-dlp-wrap').default;
 
 const LOCAL_YTDLP = path.join(process.cwd(), 'yt-dlp');
@@ -24,23 +23,53 @@ class YouTubeExtractor extends BaseExtractor {
     ].includes(type);
   }
 
+  // Ejecuta yt-dlp con --dump-json (agregando el proxy si está configurado) y
+  // devuelve un array de objetos parseados. Todo el metadata pasa por aquí,
+  // por el mismo camino (y el mismo proxy) que el audio.
+  async _ytdlpJson(args) {
+    const argsFinal = [...args];
+    if (process.env.WARP_PROXY_URL) {
+      argsFinal.push('--proxy', process.env.WARP_PROXY_URL);
+    }
+    const output = await this._ytdlp.execPromise(argsFinal);
+    return output
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .map(line => {
+          try { return JSON.parse(line); } catch { return null; }
+        })
+        .filter(Boolean);
+  }
+
   async handle(query, context) {
-    if (context.type === QueryType.YOUTUBE_VIDEO || context.type === QueryType.YOUTUBE) {
-      const video = await YouTube.getVideo(query).catch(() => null);
-      if (!video) return this.createResponse();
-      return this.createResponse(null, [this._buildTrack(video, context)]);
-    }
+    try {
+      if (context.type === QueryType.YOUTUBE_VIDEO || context.type === QueryType.YOUTUBE) {
+        const datos = await this._ytdlpJson([
+          query, '--dump-json', '--no-playlist', '--skip-download', '--no-warnings',
+        ]);
+        if (!datos.length) return this.createResponse();
+        return this.createResponse(null, [this._buildTrack(datos[0], context)]);
+      }
 
-    if (context.type === QueryType.YOUTUBE_PLAYLIST) {
-      const playlist = await YouTube.getPlaylist(query, { fetchAll: true }).catch(() => null);
-      if (!playlist) return this.createResponse();
-      const tracks = playlist.videos.map(v => this._buildTrack(v, context));
-      return this.createResponse(null, tracks);
-    }
+      if (context.type === QueryType.YOUTUBE_PLAYLIST) {
+        const datos = await this._ytdlpJson([
+          query, '--dump-json', '--flat-playlist', '--no-warnings',
+        ]);
+        if (!datos.length) return this.createResponse();
+        return this.createResponse(null, datos.map(v => this._buildTrack(v, context)));
+      }
 
-    const results = await YouTube.search(query, { limit: 5, type: 'video' }).catch(() => []);
-    if (!results.length) return this.createResponse();
-    return this.createResponse(null, results.map(v => this._buildTrack(v, context)));
+      // Búsqueda por texto
+      const datos = await this._ytdlpJson([
+        `ytsearch1:${query}`, '--dump-json', '--no-warnings', '--skip-download',
+      ]);
+      if (!datos.length) return this.createResponse();
+      return this.createResponse(null, datos.map(v => this._buildTrack(v, context)));
+    } catch (e) {
+      console.error('[youtube:handle]', e.message);
+      return this.createResponse();
+    }
   }
 
   async stream(track) {
@@ -71,14 +100,19 @@ class YouTubeExtractor extends BaseExtractor {
     return `${track.author} - ${track.title}`;
   }
 
-  _buildTrack(video, context) {
+  _buildTrack(v, context) {
+    const segundos = Math.round(v.duration ?? 0);
+    const mm = Math.floor(segundos / 60);
+    const ss = String(segundos % 60).padStart(2, '0');
+    const miniaturas = Array.isArray(v.thumbnails) ? v.thumbnails : [];
+
     const track = new Track(this.context.player, {
-      title:       video.title ?? 'Desconocido',
-      author:      video.channel?.name ?? 'Desconocido',
-      url:         video.url,
-      thumbnail:   video.thumbnail?.url ?? '',
-      duration:    video.durationFormatted ?? '0:00',
-      views:       video.views ?? 0,
+      title:       v.title ?? 'Desconocido',
+      author:      v.uploader ?? v.channel ?? 'Desconocido',
+      url:         v.webpage_url ?? (v.id ? `https://www.youtube.com/watch?v=${v.id}` : ''),
+      thumbnail:   v.thumbnail ?? miniaturas.at(-1)?.url ?? '',
+      duration:    segundos ? `${mm}:${ss}` : '0:00',
+      views:       v.view_count ?? 0,
       requestedBy: context.requestedBy,
       source:      'youtube',
       queryType:   context.type,
