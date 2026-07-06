@@ -33,13 +33,11 @@ for (const file of commandFiles) {
 }
 
 const player = new Player(client);
-player.on('debug', (message) => console.log('[player:debug]', message));
-player.events.on('debug', (queue, message) => console.log('[queue:debug]', message));
 
 // Diagnóstico: verificar yt-dlp al arranque
 ytdlp.getVersion()
-  .then(v => console.log(`[yt-dlp] ✅ v${v} disponible`))
-  .catch(() => console.error('[yt-dlp] ❌ NO encontrado en PATH — audio no funcionará'));
+    .then(v => console.log(`[yt-dlp] ✅ v${v} disponible`))
+    .catch(() => console.error('[yt-dlp] ❌ NO encontrado en PATH — audio no funcionará'));
 
 process.on('unhandledRejection', (err) => {
   console.error('[unhandledRejection]', err?.message ?? err);
@@ -62,13 +60,17 @@ process.on('unhandledRejection', (err) => {
           if (!query) throw new Error(`Sin metadatos para: ${url}`);
 
           console.log(`[música] Buscando: "${query}"`);
-          const output = await ytdlp.execPromise([
+          const ytdlpArgs = [
             `ytsearch1:${query}`,
             '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
             '--get-url',
             '--no-playlist',
             '--no-warnings',
-          ]);
+          ];
+          if (process.env.WARP_PROXY_URL) {
+            ytdlpArgs.push('--proxy', process.env.WARP_PROXY_URL);
+          }
+          const output = await ytdlp.execPromise(ytdlpArgs);
           const streamUrl = output.trim().split('\n')[0];
           if (!streamUrl || !streamUrl.startsWith('http')) throw new Error('URL inválida de yt-dlp');
           console.log('[música:spotify] URL OK');

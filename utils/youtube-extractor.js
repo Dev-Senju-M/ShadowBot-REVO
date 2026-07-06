@@ -46,16 +46,20 @@ class YouTubeExtractor extends BaseExtractor {
   async stream(track) {
     console.log(`[youtube:stream] ${track.title}`);
     try {
-      const output = await this._ytdlp.execPromise([
+      const args = [
         track.url,
         '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
         '--get-url',
         '--no-playlist',
         '--no-warnings',
-      ]);
+      ];
+      if (process.env.WARP_PROXY_URL) {
+        args.push('--proxy', process.env.WARP_PROXY_URL);
+      }
+      const output = await this._ytdlp.execPromise(args);
       const url = output.trim().split('\n')[0];
       if (!url || !url.startsWith('http')) throw new Error(`URL inválida: "${url}"`);
-      console.log('[youtube:stream] URL OK');
+      console.log('[youtube:stream] URL OK' + (process.env.WARP_PROXY_URL ? ' (vía proxy)' : ''));
       return url;
     } catch (e) {
       console.error('[youtube:stream]', e.message);
