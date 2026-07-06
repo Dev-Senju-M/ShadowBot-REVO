@@ -33,6 +33,8 @@ for (const file of commandFiles) {
 }
 
 const player = new Player(client);
+player.on('debug', (message) => console.log('[player:debug]', message));
+player.events.on('debug', (queue, message) => console.log('[queue:debug]', message));
 
 // Diagnóstico: verificar yt-dlp al arranque
 ytdlp.getVersion()
