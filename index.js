@@ -113,6 +113,7 @@ require('./events/cumpleanos')(client);
 require('./events/levels')(client);
 require('./events/prefix-commands')(client);
 require('./events/fortnite-shop')(client);
+require('./events/activity-logs')(client);
 
 let botReady = false;
 
