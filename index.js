@@ -1,15 +1,31 @@
 require('dotenv').config();
+const path = require('path');
 const { Client, GatewayIntentBits, Collection , MessageFlags} = require('discord.js');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
-const { YoutubeExtractor } = require('discord-player-youtube');
+const playdl = require('play-dl');
+const YTDlpWrap = require('yt-dlp-wrap').default;
+const YouTubeExtractor = require('./utils/youtube-extractor');
+
+// Prefer local binary (installed via railway.json buildCommand), fall back to PATH
+const LOCAL_YTDLP = path.join(process.cwd(), 'yt-dlp');
+const ytdlpBin = require('fs').existsSync(LOCAL_YTDLP) ? LOCAL_YTDLP : undefined;
+const ytdlp = new YTDlpWrap(ytdlpBin);
 const fs = require('fs');
 const http = require('http');
 
-if (process.env.YOUTUBE_COOKIE) {
-  console.log('[cookies] ✅ YOUTUBE_COOKIE detectada, se usará para autenticar con YouTube');
+// Si hay cookies de YouTube en base64 (variable de entorno), las escribimos como
+// archivo real para que yt-dlp las use con --cookies
+const COOKIES_PATH = path.join(process.cwd(), 'cookies.txt');
+if (process.env.YOUTUBE_COOKIES_B64) {
+  try {
+    fs.writeFileSync(COOKIES_PATH, Buffer.from(process.env.YOUTUBE_COOKIES_B64, 'base64'));
+    console.log('[cookies] ✅ cookies.txt generado desde YOUTUBE_COOKIES_B64');
+  } catch (err) {
+    console.error('[cookies] ❌ No se pudo generar cookies.txt:', err.message);
+  }
 } else {
-  console.log('[cookies] ⚠️ YOUTUBE_COOKIE no definida, el extractor intentará funcionar sin sesión (menos estable)');
+  console.log('[cookies] ⚠️ YOUTUBE_COOKIES_B64 no definida, yt-dlp correrá sin cookies');
 }
 
 const client = new Client({
@@ -32,32 +48,58 @@ for (const file of commandFiles) {
 
 const player = new Player(client);
 
+// Diagnóstico: verificar yt-dlp al arranque
+ytdlp.getVersion()
+    .then(v => console.log(`[yt-dlp] ✅ v${v} disponible`))
+    .catch(() => console.error('[yt-dlp] ❌ NO encontrado en PATH — audio no funcionará'));
+
 process.on('unhandledRejection', (err) => {
   console.error('[unhandledRejection]', err?.message ?? err);
 });
 
 (async () => {
   console.log('[startup] Cargando extractores...');
-
-  // Extractor de YouTube (discord-player-youtube, basado en youtubei.js).
-  // Usa la cookie de una cuenta dedicada para autenticar y evitar bloqueos
-  // de "Sign in to confirm you're not a bot" que sufre yt-dlp en servidores.
-  await player.extractors.register(YoutubeExtractor, {
-    cookie: process.env.YOUTUBE_COOKIE,
-    filterAutoplayTracks: true,
-    disableYTJSLog: true,
-  });
-
-  // Spotify, SoundCloud, etc. Los links de Spotify se resuelven buscando la
-  // misma canción en YouTube automáticamente (bridging nativo de discord-player,
-  // ya no hace falta un createStream manual con yt-dlp).
   await player.extractors.loadMulti(DefaultExtractors, {
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-    },
-  });
+      createStream: async (_ext, url) => {
+        try {
+          const data = await _ext._lib.getData(url).catch(() => null);
+          if (!data) throw new Error(`Sin datos Spotify para: ${url}`);
 
+          const artist = data.artists?.[0]?.name ?? data.artist ?? '';
+          const title  = data.title ?? data.name ?? '';
+          const query  = [artist, title].filter(Boolean).join(' - ');
+          if (!query) throw new Error(`Sin metadatos para: ${url}`);
+
+          console.log(`[música] Buscando: "${query}"`);
+          const ytdlpArgs = [
+            `ytsearch1:${query}`,
+            '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
+            '--get-url',
+            '--no-playlist',
+            '--no-warnings',
+          ];
+          if (process.env.WARP_PROXY_URL) {
+            ytdlpArgs.push('--proxy', process.env.WARP_PROXY_URL);
+          }
+          if (fs.existsSync(COOKIES_PATH)) {
+            ytdlpArgs.push('--cookies', COOKIES_PATH);
+          }
+          const output = await ytdlp.execPromise(ytdlpArgs);
+          const streamUrl = output.trim().split('\n')[0];
+          if (!streamUrl || !streamUrl.startsWith('http')) throw new Error('URL inválida de yt-dlp');
+          console.log('[música:spotify] URL OK');
+          return streamUrl;
+        } catch (err) {
+          console.error('[música:createStream]', err.message);
+          throw err;
+        }
+      },
+    }
+  });
+  await player.extractors.register(YouTubeExtractor, {});
   console.log('✅ Extractores cargados');
 })();
 
