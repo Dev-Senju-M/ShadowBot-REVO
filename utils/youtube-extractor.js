@@ -79,17 +79,23 @@ class YouTubeExtractor extends BaseExtractor {
   // no solo la consulta de metadata.
   async stream(track) {
     console.log(`[youtube:stream] ${track.title}`);
+    // NOTA: no pasar '-o'/'-' acá — execStream() de yt-dlp-wrap ya lo agrega
+    // internamente. Pasarlo dos veces puede confundir a yt-dlp.
     const args = [
       track.url,
       '-f', 'bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best',
-      '-o', '-',
       '--no-playlist',
       '--no-warnings',
-      '--quiet',
       ...this._extras(),
     ];
 
     const flujo = this._ytdlp.execStream(args);
+
+    // Log completo de stderr de yt-dlp para poder diagnosticar (bot-check,
+    // cookies vencidas, geobloqueo, etc). Sin '--quiet' esto ahora se ve.
+    flujo.on('ytDlpEvent', (eventType, eventData) => {
+      console.log(`[youtube:stream:ytdlp] ${eventType} ${eventData}`);
+    });
     flujo.on('error', err => console.error('[youtube:stream:error]', err.message));
 
     console.log('[youtube:stream] descargando vía yt-dlp' +
