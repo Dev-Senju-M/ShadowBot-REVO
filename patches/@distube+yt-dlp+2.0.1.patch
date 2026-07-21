@@ -1,0 +1,31 @@
+diff --git a/node_modules/@distube/yt-dlp/dist/index.js b/node_modules/@distube/yt-dlp/dist/index.js
+index b17b126..5a2c846 100644
+--- a/node_modules/@distube/yt-dlp/dist/index.js
++++ b/node_modules/@distube/yt-dlp/dist/index.js
+@@ -144,10 +144,10 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+     const info = await json(url, {
+       dumpSingleJson: true,
+       noWarnings: true,
+-      noCallHome: true,
+       preferFreeFormats: true,
+       skipDownload: true,
+-      simulate: true
++      simulate: true,
++      ...(process.env.YTDLP_COOKIES_PATH ? { cookies: process.env.YTDLP_COOKIES_PATH } : {})
+     }).catch((e2) => {
+       throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
+     });
+@@ -174,11 +174,11 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+     const info = await json(song.url, {
+       dumpSingleJson: true,
+       noWarnings: true,
+-      noCallHome: true,
+       preferFreeFormats: true,
+       skipDownload: true,
+       simulate: true,
+-      format: "ba/ba*"
++      format: "ba/ba*",
++      ...(process.env.YTDLP_COOKIES_PATH ? { cookies: process.env.YTDLP_COOKIES_PATH } : {})
+     }).catch((e2) => {
+       throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
+     });
