@@ -18,7 +18,9 @@ module.exports = {
         }
 
         try {
+            const queueParaSalir = interaction.client.distube.getQueue(interaction.guildId);
             await interaction.client.distube.stop(interaction.guildId);
+            queueParaSalir?.voice?.leave();
             await interaction.reply('🏃‍♂️ **Desconectado y cola vaciada!**');
         } catch (error) {
             console.error('[/stop]', error);

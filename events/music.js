@@ -1,4 +1,4 @@
-const { DisTube } = require('distube');
+const { DisTube, isVoiceChannelEmpty } = require('distube');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
@@ -7,9 +7,6 @@ const { EmbedBuilder } = require('discord.js');
 module.exports = (client) => {
     client.distube = new DisTube(client, {
         emitNewSongOnly: false,
-        leaveOnEmpty: true,
-        leaveOnFinish: true,
-        leaveOnStop: true,
         savePreviousSongs: true,
         emitAddSongWhenCreatingQueue: false,
         plugins: [
@@ -47,12 +44,21 @@ module.exports = (client) => {
 
     client.distube.on('finish', (queue) => {
         queue.textChannel?.send('🏁 **La cola de canciones ha terminado!**').catch(() => {});
+        queue.voice?.leave();
     });
 
     client.distube.on('error', (context, error) => {
         console.error('[DisTube error]', error);
         const canal = context?.textChannel ?? context;
         canal?.send?.(`❌ **Ocurrió un error al reproducir:** ${error.message?.slice(0, 200) ?? 'Error desconocido'}`).catch(() => {});
+    });
+
+    client.on('voiceStateUpdate', (oldState) => {
+        if (!oldState?.channel) return;
+        const voice = client.distube.voices.get(oldState);
+        if (voice && isVoiceChannelEmpty(oldState)) {
+            voice.leave();
+        }
     });
 
     console.log('🎶 Módulo de música (DisTube) cargado!');
