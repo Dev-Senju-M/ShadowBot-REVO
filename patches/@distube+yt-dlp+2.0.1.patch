@@ -1,5 +1,5 @@
 diff --git a/node_modules/@distube/yt-dlp/dist/index.js b/node_modules/@distube/yt-dlp/dist/index.js
-index b17b126..5a2c846 100644
+index b17b126..c65dc87 100644
 --- a/node_modules/@distube/yt-dlp/dist/index.js
 +++ b/node_modules/@distube/yt-dlp/dist/index.js
 @@ -144,10 +144,10 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
@@ -15,7 +15,7 @@ index b17b126..5a2c846 100644
      }).catch((e2) => {
        throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
-@@ -174,11 +174,11 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+@@ -174,15 +174,16 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(song.url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -29,3 +29,8 @@ index b17b126..5a2c846 100644
      }).catch((e2) => {
        throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
+     if (isPlaylist(info)) throw new import_distube.DisTubeError("YTDLP_ERROR", "Cannot get stream URL of a entire playlist");
++    console.log("[YtDlpPlugin DEBUG] format_id=" + info.format_id + " protocol=" + info.protocol + " ext=" + info.ext + " acodec=" + info.acodec + " filesize=" + info.filesize + " filesize_approx=" + info.filesize_approx + " url=" + info.url);
+     return info.url;
+   }
+   getRelatedSongs() {
