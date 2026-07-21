@@ -1,8 +1,53 @@
 diff --git a/node_modules/@distube/yt-dlp/dist/index.js b/node_modules/@distube/yt-dlp/dist/index.js
-index b17b126..c65dc87 100644
+index b17b126..0acc4b9 100644
 --- a/node_modules/@distube/yt-dlp/dist/index.js
 +++ b/node_modules/@distube/yt-dlp/dist/index.js
-@@ -144,10 +144,10 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+@@ -71,20 +71,42 @@ Status code ${response.statusCode.toString()}`);
+ }, "makeRequest");
+ var args = /* @__PURE__ */ __name((url, flags = {}) => [url].concat((0, import_dargs.default)(flags, { useEquals: false })).filter(Boolean), "args");
+ var json = /* @__PURE__ */ __name((url, flags, options) => {
++  console.log("[YtDlpPlugin DEBUG] spawning yt-dlp for: " + url);
+   const process2 = (0, import_node_child_process.spawn)(YTDLP_PATH, args(url, flags), options);
+   return new Promise((resolve, reject) => {
+     let output = "";
++    let stdoutBuf = "";
++    let settled = false;
++    const timeoutMs = Number(process.env.YTDLP_TIMEOUT_MS) || 25000;
++    const timer = setTimeout(() => {
++      if (settled) return;
++      settled = true;
++      console.error("[YtDlpPlugin DEBUG] TIMEOUT after " + timeoutMs + "ms, killing yt-dlp. Partial output so far:\n" + output);
++      process2.kill("SIGKILL");
++      reject(new Error("yt-dlp timed out after " + timeoutMs + "ms. Partial output: " + output.slice(-1000)));
++    }, timeoutMs);
+     process2.stdout?.on("data", (chunk) => {
+       output += chunk;
++      stdoutBuf += chunk;
+     });
+     process2.stderr?.on("data", (chunk) => {
+       output += chunk;
++      console.log("[yt-dlp stderr] " + chunk.toString().trim());
+     });
+     process2.on("close", (code) => {
+-      if (code === 0) resolve(JSON.parse(output));
++      if (settled) return;
++      settled = true;
++      clearTimeout(timer);
++      console.log("[YtDlpPlugin DEBUG] yt-dlp closed with code " + code);
++      if (code === 0) resolve(JSON.parse(stdoutBuf));
+       else reject(new Error(output));
+     });
+-    process2.on("error", reject);
++    process2.on("error", (err) => {
++      if (settled) return;
++      settled = true;
++      clearTimeout(timer);
++      reject(err);
++    });
+   });
+ }, "json");
+ var binContentTypes = ["binary/octet-stream", "application/octet-stream", "application/x-binary"];
+@@ -144,10 +166,10 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -15,7 +60,7 @@ index b17b126..c65dc87 100644
      }).catch((e2) => {
        throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
-@@ -174,15 +174,16 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+@@ -174,15 +196,16 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(song.url, {
        dumpSingleJson: true,
        noWarnings: true,
