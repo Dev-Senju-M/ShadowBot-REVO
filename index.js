@@ -36,6 +36,7 @@ require('./events/prefix-commands')(client);
 require('./events/fortnite-shop')(client);
 require('./events/activity-logs')(client);
 require('./events/music')(client);
+require('./write-cookies');
 
 let botReady = false;
 
