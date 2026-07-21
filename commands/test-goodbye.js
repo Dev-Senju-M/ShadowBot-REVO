@@ -23,8 +23,8 @@ module.exports = {
     const member = interaction.member;
 
     const mensaje = config.goodbyeMessage
-      .replace('{user}', `<@${member.id}>`)
-      .replace('{tag}', member.user.tag);
+        .replace(/{user}/g, `<@${member.id}>`)
+        .replace(/{tag}/g, member.user.tag);
 
     const embed = new EmbedBuilder()
       .setColor(config.goodbyeColor || '#ED4245')

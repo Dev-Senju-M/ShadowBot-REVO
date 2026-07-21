@@ -3,8 +3,9 @@
   "goodbyeChannel": "1307600807239221270",
   "rulesChannel": "750041400124637336",
   "autoRole": "874420788915212288",
+  "unverifiedRole": "",
   "welcomeColor": "Red",
   "goodbyeColor": "#ED4245",
-  "welcomeMessage": "ss",
-  "goodbyeMessage": "`### 🌑 **${interaction.member.user.tag}** 𝒉𝒂 𝒂𝒃𝒂𝒏𝒅𝒐𝒏𝒂𝒅𝒐 𝒆𝒍 𝑺𝒂𝒏𝒕𝒖𝒂𝒓𝒊𝒐...\\n\\n` +         `✦ 𝑳𝒂𝒔 𝒔𝒐𝒎𝒃𝒓𝒂𝒔 𝒔𝒆 𝒄𝒊𝒆𝒓𝒓𝒂𝒏 𝒅𝒐𝒏𝒅𝒆 𝒂𝒏𝒕𝒆𝒔 𝒉𝒂𝒃𝒊𝒂 𝒖𝒏 𝒂𝒍𝒎𝒂. 𝑸𝒖𝒊𝒛𝒂𝒔 𝒆𝒍 𝑺𝒂𝒏𝒕𝒖𝒂𝒓𝒊𝒐 𝒏𝒐 𝒆𝒓𝒂 𝒔𝒖 𝒍𝒖𝒈𝒂𝒓... 𝒐 𝒒𝒖𝒊𝒛𝒂𝒔 𝒔𝒊𝒎𝒑𝒍𝒆𝒎𝒆𝒏𝒕𝒆 𝒂𝒖𝒏 𝒏𝒐 𝒍𝒐 𝒔𝒂𝒃𝒊𝒂. 🕯️\\n\\n` +         `*𝑬𝒍 𝑺𝒂𝒏𝒕𝒖𝒂𝒓𝒊𝒐 𝑴𝒐𝒄𝒉𝒐 𝒏𝒖𝒏𝒄𝒂 𝒐𝒍𝒗𝒊𝒅𝒂 𝒂 𝒍𝒐𝒔 𝒒𝒖𝒆 𝒑𝒂𝒔𝒂𝒓𝒐𝒏 𝒑𝒐𝒓 𝒂𝒒𝒖𝒊.* 🌘`"
+  "welcomeMessage": "### 🌑 HEY {user}, **BIENVENID@ AL SANTUARIO MOCHO** 🌙\n\n✦ 𝑬𝒔𝒕𝒆 𝒆𝒔 𝒕𝒖 𝒓𝒆𝒇𝒖𝒈𝒊𝒐. 𝑼𝒏 𝒍𝒖𝒈𝒂𝒓 𝒅𝒐𝒏𝒅𝒆 𝒍𝒐𝒔 𝒓𝒂𝒓𝒐𝒔, 𝒍𝒐𝒔 𝒏𝒐𝒄𝒕𝒖𝒓𝒏𝒐𝒔 𝒚 𝒍𝒐𝒔 𝒒𝒖𝒆 𝒏𝒐 𝒆𝒏𝒄𝒂𝒋𝒂𝒏 𝒆𝒏𝒄𝒖𝒆𝒏𝒕𝒓𝒂𝒏 𝒔𝒖 𝒔𝒊𝒕𝒊𝒐.\n\n🛡️ 𝑷𝒂𝒓𝒂 𝒑𝒐𝒅𝒆𝒓 𝒂𝒄𝒄𝒆𝒅𝒆𝒓 𝒂𝒍 𝒓𝒆𝒔𝒕𝒐 𝒅𝒆 𝒄𝒂𝒏𝒂𝒍𝒆𝒔 𝒑𝒓𝒆𝒔𝒊𝒐𝒏𝒂 𝒆𝒍 𝒃𝒐𝒕𝒐𝒏 ¡𝑽𝒆𝒓𝒊𝒇𝒊𝒄𝒂𝒓!\n\n✨ *No hay reglas del universo que digan que no puedes quedarte.*",
+  "goodbyeMessage": "### 🌘 **{tag}** ha abandonado el Santuario...\n\n*El Santuario Mocho nunca olvida a los que pasaron por aquí.* 🕯️"
 }
