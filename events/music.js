@@ -10,9 +10,9 @@ module.exports = (client) => {
         savePreviousSongs: true,
         emitAddSongWhenCreatingQueue: false,
         plugins: [
-            new YtDlpPlugin(),
             new SpotifyPlugin(),
             new SoundCloudPlugin(),
+            new YtDlpPlugin(),
         ],
     });
 
