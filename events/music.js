@@ -49,6 +49,10 @@ module.exports = (client) => {
         queue.voice?.leave();
     });
 
+    client.distube.on('debug', (message) => {
+        console.log('[DisTube debug]', message);
+    });
+
     client.distube.on('error', (context, error) => {
         console.error('[DisTube error]', error);
         const canal = context?.textChannel ?? context;
