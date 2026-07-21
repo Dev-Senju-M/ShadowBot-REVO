@@ -19,24 +19,13 @@
   },
   "homepage": "https://github.com/NET-Jason/ShadowBot-REVO#readme",
   "dependencies": {
-    "@discord-player/extractor": "^7.2.0",
     "@discordjs/rest": "^2.6.1",
-    "@discordjs/voice": "^0.19.2",
     "@emnapi/core": "^1.10.0",
     "@emnapi/runtime": "^1.10.0",
     "@napi-rs/canvas": "^1.0.0",
     "axios": "^1.15.2",
-    "bgutils-js": "^3.2.0",
     "discord-api-types": "^0.38.47",
-    "discord-player": "^7.2.0",
     "discord.js": "^14.26.3",
-    "dotenv": "^17.4.2",
-    "ffmpeg-static": "^5.3.0",
-    "opusscript": "^0.0.8",
-    "play-dl": "^1.9.7",
-    "spotify-web-api-node": "^5.0.2",
-    "youtube-sr": "^4.3.12",
-    "discord-player-youtube": "^0.8.3",
-    "ytmusic-api": "^5.3.1"
+    "dotenv": "^17.4.2"
   }
 }
