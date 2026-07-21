@@ -14,7 +14,7 @@ module.exports = (client) => {
         emitAddSongWhenCreatingQueue: false,
         plugins: [
             new YtDlpPlugin(),
-            new SpotifyPlugin({ parallel: true, emitEventsAfterFetching: true }),
+            new SpotifyPlugin(),
             new SoundCloudPlugin(),
         ],
     });
