@@ -31,7 +31,7 @@ module.exports = (client) => {
     client.distube.on('playSong', (queue, song) => {
         try {
             const { getVoiceConnection } = require('@discordjs/voice');
-            const conn = getVoiceConnection(queue.id);
+            const conn = getVoiceConnection(queue.id, client.user?.id) ?? getVoiceConnection(queue.id);
             if (conn) {
                 console.log(`[voice] current status at playSong: ${conn.state.status}`);
                 conn.on('stateChange', (oldS, newS) => {
