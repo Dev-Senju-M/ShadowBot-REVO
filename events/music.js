@@ -4,8 +4,18 @@ const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { EmbedBuilder } = require('discord.js');
 const ffmpegPath = require('ffmpeg-static');
+const fs = require('fs');
 
 module.exports = (client) => {
+    try {
+        const stat = fs.statSync(ffmpegPath);
+        console.log(`[ffmpeg check] path=${ffmpegPath} size=${stat.size} mode=${stat.mode.toString(8)}`);
+        fs.accessSync(ffmpegPath, fs.constants.X_OK);
+        console.log('[ffmpeg check] binary is executable ✅');
+    } catch (e) {
+        console.error('[ffmpeg check] PROBLEM with ffmpeg binary:', e.message);
+    }
+
     client.distube = new DisTube(client, {
         emitNewSongOnly: false,
         savePreviousSongs: true,
@@ -19,6 +29,30 @@ module.exports = (client) => {
     });
 
     client.distube.on('playSong', (queue, song) => {
+        try {
+            const { getVoiceConnection } = require('@discordjs/voice');
+            const conn = getVoiceConnection(queue.id);
+            if (conn) {
+                console.log(`[voice] current status at playSong: ${conn.state.status}`);
+                conn.on('stateChange', (oldS, newS) => {
+                    console.log(`[voice] ${oldS.status} -> ${newS.status}`);
+                });
+            } else {
+                console.log('[voice] no getVoiceConnection found for guild', queue.id);
+            }
+            const player = conn?.state?.subscription?.player;
+            if (player) {
+                console.log(`[voice] audio player state: ${player.state.status}`);
+                player.on('stateChange', (oldS, newS) => {
+                    console.log(`[voice] player ${oldS.status} -> ${newS.status}`);
+                });
+                player.on('error', (err) => {
+                    console.error('[voice] AudioPlayer error:', err);
+                });
+            }
+        } catch (e) {
+            console.error('[voice debug] failed to attach listeners:', e);
+        }
         queue.textChannel?.send({
             embeds: [
                 new EmbedBuilder()
