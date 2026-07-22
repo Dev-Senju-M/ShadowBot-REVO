@@ -26,4 +26,10 @@ async function sendActivityLog(guild, embed) {
   await enviarA(guild, config.logsChannel, embed);
 }
 
-module.exports = { sendModLog, sendActivityLog };
+// Nuevo: roles con permisos peligrosos, canales, overwrites, webhooks, desbaneos
+async function sendSecurityLog(guild, embed) {
+  const config = leerConfig();
+  await enviarA(guild, config.securityLogChannel, embed);
+}
+
+module.exports = { sendModLog, sendActivityLog, sendSecurityLog };
