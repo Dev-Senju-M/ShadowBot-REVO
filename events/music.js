@@ -20,7 +20,14 @@ module.exports = (client) => {
         emitNewSongOnly: false,
         savePreviousSongs: true,
         emitAddSongWhenCreatingQueue: false,
-        ffmpeg: { path: ffmpegPath },
+        ffmpeg: {
+            path: ffmpegPath,
+            args: {
+                input: {
+                    headers: 'Referer: https://www.youtube.com/\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+                },
+            },
+        },
         plugins: [
             new SpotifyPlugin(),
             new SoundCloudPlugin(),
