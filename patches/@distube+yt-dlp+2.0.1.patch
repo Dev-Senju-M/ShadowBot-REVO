@@ -1,5 +1,5 @@
 diff --git a/node_modules/@distube/yt-dlp/dist/index.js b/node_modules/@distube/yt-dlp/dist/index.js
-index b17b126..d56f966 100644
+index b17b126..d64f126 100644
 --- a/node_modules/@distube/yt-dlp/dist/index.js
 +++ b/node_modules/@distube/yt-dlp/dist/index.js
 @@ -71,20 +71,42 @@ Status code ${response.statusCode.toString()}`);
@@ -61,22 +61,61 @@ index b17b126..d56f966 100644
      }).catch((e2) => {
        throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
-@@ -174,15 +197,16 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
-     const info = await json(song.url, {
-       dumpSingleJson: true,
-       noWarnings: true,
+@@ -171,19 +194,45 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+     if (!song.url) {
+       throw new import_distube.DisTubeError("YTDLP_PLUGIN_INVALID_SONG", "Cannot get stream url from invalid song.");
+     }
+-    const info = await json(song.url, {
+-      dumpSingleJson: true,
+-      noWarnings: true,
 -      noCallHome: true,
-       preferFreeFormats: true,
-       skipDownload: true,
-       simulate: true,
+-      preferFreeFormats: true,
+-      skipDownload: true,
+-      simulate: true,
 -      format: "ba/ba*"
-+      format: "ba/ba*",
-+      ...(process.env.YTDLP_COOKIES_PATH ? { cookies: process.env.YTDLP_COOKIES_PATH } : {})
-     }).catch((e2) => {
-       throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
+-    }).catch((e2) => {
+-      throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
++    // En vez de devolver la URL firmada de googlevideo.com (que queda atada a
++    // la IP que hizo la petición y puede dar 403 si ffmpeg sale por otra IP),
++    // hacemos que yt-dlp descargue el audio y lo escriba en un FIFO local.
++    // ffmpeg lee ese FIFO como si fuera un archivo normal. Así solo hay UNA
++    // conexión de red hacia YouTube en todo el proceso (la de yt-dlp).
++    const os2 = require("os");
++    const path2 = require("path");
++    const fs2 = require("fs");
++    const { spawn: spawn2, execSync: execSync2 } = require("child_process");
++
++    const fifoPath = path2.join(os2.tmpdir(), `ytdlp-${Date.now()}-${Math.random().toString(36).slice(2)}.fifo`);
++    try {
++      execSync2(`mkfifo "${fifoPath}"`);
++    } catch (e2) {
++      throw new import_distube.DisTubeError("YTDLP_ERROR", `No se pudo crear el FIFO: ${e2.message}`);
++    }
++    console.log("[YtDlpPlugin DEBUG] FIFO creado en: " + fifoPath);
++
++    const dlArgs = ["-f", "ba/ba*", "-o", "-", "--no-playlist", "--no-warnings"];
++    if (process.env.YTDLP_COOKIES_PATH) dlArgs.push("--cookies", process.env.YTDLP_COOKIES_PATH);
++    dlArgs.push(song.url);
++
++    console.log("[YtDlpPlugin DEBUG] spawning yt-dlp (descarga a FIFO) para: " + song.url);
++    const dlProcess = spawn2(YTDLP_PATH, dlArgs);
++    const fifoWriteStream = fs2.createWriteStream(fifoPath);
++    dlProcess.stdout.pipe(fifoWriteStream);
++    dlProcess.stderr.on("data", (chunk) => {
++      console.log("[yt-dlp fifo stderr] " + chunk.toString().trim());
++    });
++    dlProcess.on("error", (err) => {
++      console.error("[YtDlpPlugin DEBUG] error en proceso de descarga FIFO:", err);
++      fifoWriteStream.destroy();
      });
-     if (isPlaylist(info)) throw new import_distube.DisTubeError("YTDLP_ERROR", "Cannot get stream URL of a entire playlist");
-+    console.log("[YtDlpPlugin DEBUG] format_id=" + info.format_id + " protocol=" + info.protocol + " ext=" + info.ext + " acodec=" + info.acodec + " filesize=" + info.filesize + " filesize_approx=" + info.filesize_approx + " url=" + info.url);
-     return info.url;
+-    if (isPlaylist(info)) throw new import_distube.DisTubeError("YTDLP_ERROR", "Cannot get stream URL of a entire playlist");
+-    return info.url;
++    dlProcess.on("close", (code) => {
++      console.log("[YtDlpPlugin DEBUG] proceso de descarga FIFO cerrado, code=" + code);
++      fs2.unlink(fifoPath, () => {});
++    });
++
++    return fifoPath;
    }
    getRelatedSongs() {
+     return [];

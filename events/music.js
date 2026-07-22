@@ -26,9 +26,9 @@ module.exports = (client) => {
         const stat = fs.statSync(ffmpegPath);
         console.log(`[ffmpeg check] path=${ffmpegPath} size=${stat.size} mode=${stat.mode.toString(8)}`);
         fs.accessSync(ffmpegPath, fs.constants.X_OK);
-        console.log('[ffmpeg check] binario ejecutable ✅');
+        console.log('[ffmpeg check] binary is executable ✅');
     } catch (e) {
-        console.error('[ffmpeg check] PROBLEMA con el binario de ffmpeg:', e.message);
+        console.error('[ffmpeg check] PROBLEM with ffmpeg binary:', e.message);
     }
 
     client.distube = new DisTube(client, {
@@ -37,11 +37,6 @@ module.exports = (client) => {
         emitAddSongWhenCreatingQueue: false,
         ffmpeg: {
             path: ffmpegPath,
-            args: {
-                input: {
-                    headers: 'Referer: https://www.youtube.com/\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\r\n',
-                },
-            },
         },
         plugins: [
             new SpotifyPlugin(),
