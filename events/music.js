@@ -3,17 +3,32 @@ const { YtDlpPlugin } = require('@distube/yt-dlp');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { EmbedBuilder } = require('discord.js');
-const ffmpegPath = require('ffmpeg-static');
 const fs = require('fs');
+const { execSync } = require('child_process');
+
+function resolveFfmpegPath() {
+    try {
+        const systemPath = execSync('which ffmpeg').toString().trim();
+        if (systemPath) {
+            console.log('[ffmpeg check] usando ffmpeg del sistema:', systemPath);
+            return systemPath;
+        }
+    } catch (e) {
+        console.warn('[ffmpeg check] no se encontró ffmpeg del sistema, usando ffmpeg-static');
+    }
+    return require('ffmpeg-static');
+}
+
+const ffmpegPath = resolveFfmpegPath();
 
 module.exports = (client) => {
     try {
         const stat = fs.statSync(ffmpegPath);
         console.log(`[ffmpeg check] path=${ffmpegPath} size=${stat.size} mode=${stat.mode.toString(8)}`);
         fs.accessSync(ffmpegPath, fs.constants.X_OK);
-        console.log('[ffmpeg check] binary is executable ✅');
+        console.log('[ffmpeg check] binario ejecutable ✅');
     } catch (e) {
-        console.error('[ffmpeg check] PROBLEM with ffmpeg binary:', e.message);
+        console.error('[ffmpeg check] PROBLEMA con el binario de ffmpeg:', e.message);
     }
 
     client.distube = new DisTube(client, {
@@ -24,7 +39,7 @@ module.exports = (client) => {
             path: ffmpegPath,
             args: {
                 input: {
-                    headers: 'Referer: https://www.youtube.com/\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+                    headers: 'Referer: https://www.youtube.com/\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\r\n',
                 },
             },
         },
