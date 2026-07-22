@@ -94,6 +94,10 @@ module.exports = (client) => {
         console.log('[DisTube debug]', message);
     });
 
+    client.distube.on('ffmpegDebug', (message) => {
+        console.log('[ffmpeg debug]', message);
+    });
+
     client.distube.on('error', (context, error) => {
         console.error('[DisTube error]', error);
         const canal = context?.textChannel ?? context;
