@@ -38,6 +38,7 @@ require('./events/activity-logs')(client);
 require('./events/music')(client);
 require('./write-cookies');
 require('./events/security-logs')(client);
+require('./events/adivina-cancion-panel')(client);
 
 let botReady = false;
 
