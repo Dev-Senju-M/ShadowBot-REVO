@@ -178,7 +178,12 @@ async function jugar(interaction, guildId) {
 
         game.currentSong.titulo = song?.name ?? query;
 
-        await queue.seek(inicio);
+        // Solo saltamos si piden un inicio distinto de 0: evita el retraso extra de reiniciar
+        // la decodificación cuando de todas formas se quiere reproducir desde el principio.
+        if (inicio > 0) {
+            await queue.seek(inicio);
+        }
+
         await interaction.editReply(`🎶 ¡Sonando la ronda ${game.roundNumber}! Escuchen con atención...`);
 
         const durMs = duracionClip(duracionPedida) * 1000;
