@@ -53,6 +53,33 @@ function esperarPlaySong(distube, guildId, timeoutMs = 20000) {
     });
 }
 
+// Espera a que el AudioPlayer de @discordjs/voice llegue realmente al estado
+// "playing" (no solo que DisTube haya iniciado el proceso). Esto es lo que
+// marca el momento exacto en que el audio empieza a ser audible en el canal,
+// que es varios segundos más tarde que el evento "playSong" de DisTube.
+function esperarAudioAudible(queue, timeoutMs = 15000) {
+    return new Promise((resolve, reject) => {
+        const audioPlayer = queue?.voice?.audioPlayer;
+        if (!audioPlayer) return resolve(); // fallback de seguridad si no está disponible
+
+        if (audioPlayer.state.status === 'playing') return resolve();
+
+        const timer = setTimeout(() => {
+            audioPlayer.off('stateChange', handler);
+            reject(new Error('Tiempo de espera agotado esperando que el audio empezara a sonar.'));
+        }, timeoutMs);
+
+        function handler(_oldState, newState) {
+            if (newState.status === 'playing') {
+                clearTimeout(timer);
+                audioPlayer.off('stateChange', handler);
+                resolve();
+            }
+        }
+        audioPlayer.on('stateChange', handler);
+    });
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('adivina-cancion')
@@ -178,14 +205,23 @@ async function jugar(interaction, guildId) {
 
         game.currentSong.titulo = song?.name ?? query;
 
-        // Solo saltamos si piden un inicio distinto de 0: evita el retraso extra de reiniciar
-        // la decodificación cuando de todas formas se quiere reproducir desde el principio.
         if (inicio > 0) {
+            // Al saltar de posición, DisTube reinicia el proceso de audio (ffmpeg),
+            // así que hay que volver a esperar a que el sonido sea audible de verdad.
+            const esperaAudibleTrasSalto = esperarAudioAudible(queue);
             await queue.seek(inicio);
+            await esperaAudibleTrasSalto.catch(err => console.warn('[adivina-cancion]', err.message));
+        } else {
+            // Incluso reproduciendo desde el inicio, hay que esperar a que termine el buffering.
+            await esperarAudioAudible(queue).catch(err => console.warn('[adivina-cancion]', err.message));
         }
+
+        // Si mientras se esperaba el audio la ronda fue cancelada (revelar/finalizar), no seguir.
+        if (game.currentSong?.roundId !== rondaId || game.state !== 'round_playing') return;
 
         await interaction.editReply(`🎶 ¡Sonando la ronda ${game.roundNumber}! Escuchen con atención...`);
 
+        // El cronómetro del fragmento arranca AHORA, justo cuando el audio ya es audible.
         const durMs = duracionClip(duracionPedida) * 1000;
         game.roundTimer = setTimeout(async () => {
             try {
