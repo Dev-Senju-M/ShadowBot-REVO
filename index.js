@@ -40,6 +40,13 @@ require('./write-cookies');
 require('./events/security-logs')(client);
 require('./events/adivina-cancion-panel')(client);
 
+process.on('uncaughtException', (error) => {
+  console.error('[uncaughtException]', error);
+});
+process.on('unhandledRejection', (error) => {
+  console.error('[unhandledRejection]', error);
+});
+
 let botReady = false;
 
 client.once('clientReady', () => {
