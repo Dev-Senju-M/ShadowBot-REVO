@@ -3,6 +3,14 @@ const { Client, GatewayIntentBits, Collection , MessageFlags} = require('discord
 const fs = require('fs');
 const http = require('http');
 
+process.on('uncaughtException', (error) => {
+  console.error('[uncaughtException]', error);
+});
+process.on('unhandledRejection', (error) => {
+  console.error('[unhandledRejection]', error);
+});
+
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -40,12 +48,6 @@ require('./write-cookies');
 require('./events/security-logs')(client);
 require('./events/adivina-cancion-panel')(client);
 
-process.on('uncaughtException', (error) => {
-  console.error('[uncaughtException]', error);
-});
-process.on('unhandledRejection', (error) => {
-  console.error('[unhandledRejection]', error);
-});
 
 let botReady = false;
 
