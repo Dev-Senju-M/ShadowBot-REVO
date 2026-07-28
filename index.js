@@ -47,6 +47,7 @@ require('./events/music')(client);
 require('./write-cookies');
 require('./events/security-logs')(client);
 require('./events/adivina-cancion-panel')(client);
+require('./events/torneo-panel')(client);
 
 
 let botReady = false;
@@ -80,6 +81,17 @@ http.createServer((req, res) => {
 });
 
 client.on('interactionCreate', async interaction => {
+  if (interaction.isAutocomplete()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command || !command.autocomplete) return;
+    try {
+      await command.autocomplete(interaction);
+    } catch (error) {
+      console.error(error);
+    }
+    return;
+  }
+
   if (!interaction.isChatInputCommand()) return;
   const command = client.commands.get(interaction.commandName);
   if (!command) return;
