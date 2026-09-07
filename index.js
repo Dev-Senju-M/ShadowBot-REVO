@@ -29,10 +29,6 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-process.on('unhandledRejection', (err) => {
-  console.error('[unhandledRejection]', err?.message ?? err);
-});
-
 require('./events/welcome')(client);
 require('./events/verify')(client);
 require('./events/stats-channels')(client);

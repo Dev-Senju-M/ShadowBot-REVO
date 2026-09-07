@@ -94,6 +94,9 @@ Canales de voz que se actualizan solos cada 10 minutos mostrando miembros totale
 ### 🤖 Auto-respuestas
 Configura triggers personalizados (texto → respuesta automática) sin tocar código, directamente desde Discord.
 
+### 🧠 IA — `/ask`
+El bot tiene un personaje con IA propio (nombre y personalidad configurables) al que cualquiera puede preguntarle algo con `/ask`. Los administradores ajustan el tono, el modelo y pueden activar/desactivar la IA en cualquier momento con `/setup-ia`, sin tocar código. Requiere una `ANTHROPIC_API_KEY` (ver [Variables de Entorno](#-variables-de-entorno)).
+
 ---
 
 ## 📋 Listado completo de comandos
@@ -112,6 +115,8 @@ Configura triggers personalizados (texto → respuesta automática) sin tocar c�
 | `/tienda-fortnite` | Muestra la tienda actual de Fortnite |
 | `/twitch` | Estadísticas del canal de Twitch |
 | `/stats` | Estadísticas del servidor |
+| `/ask` | Pregúntale algo a la IA del bot |
+| `/setup-ia` | Configura nombre, personalidad, modelo y estado de la IA |
 | `/play` `queue` `skip` `stop` `volume` | Reproductor de música |
 | `/ban` `kick` `mute` `clear` | Moderación |
 | `/setup-welcome` `setup-goodbye` `setup-rules` `setup-verificacion` | Configuración de onboarding |
@@ -154,6 +159,8 @@ ShadowBot-REVO/
 │   ├── tienda-fortnite.js
 │   ├── twitch.js
 │   ├── stats.js
+│   ├── ask.js              # /ask — chat con la IA del bot
+│   ├── setup-ia.js         # Configuración de personalidad de la IA
 │   ├── ban.js / kick.js / mute.js / clear.js
 │   ├── play.js / queue.js / skip.js / stop.js / volume.js
 │   ├── setup-*.js         # Comandos de configuración
@@ -175,6 +182,7 @@ ShadowBot-REVO/
 │   ├── torneos.js
 │   ├── fortnite-shop.js
 │   ├── generate-shop-image.js
+│   ├── ai.js                # Wrapper de IA (Anthropic API) + personalidad
 │   └── song-game.js
 ├── img/
 ├── config.json              # Configuración general del servidor
@@ -183,6 +191,7 @@ ShadowBot-REVO/
 ├── economia.json               # Saldos de la economía interna
 ├── cumpleanos.json              # Cumpleaños registrados
 ├── autorespuestas.json           # Triggers de auto-respuesta
+├── personalidad.json              # Nombre/tono/modelo/estado de la IA
 ├── deploy-commands.js
 ├── index.js
 └── package.json
@@ -250,6 +259,7 @@ Todo se configura con slash commands, sin tocar código:
 /setup-logs               → Canal de logs de actividad (voz, mensajes, perfiles)
 /setup-security-logs      → Canal de logs de seguridad (roles, canales, webhooks)
 /setup-tienda-fortnite    → Canal donde se publica la tienda de Fortnite cada día
+/setup-ia                 → Nombre, personalidad, modelo y activar/desactivar la IA
 /torneo crear             → Crea tu primer torneo
 ```
 
@@ -274,6 +284,7 @@ Cada `git push` a `main` redespliega el bot automáticamente. El bot expone adem
 |----------|:---:|-------------|
 | `TOKEN` | ✅ | Token del bot de Discord |
 | `CLIENT_ID` | ✅ | Application ID de Discord |
+| `ANTHROPIC_API_KEY` | ➖ | API key de Anthropic para `/ask` y demás funciones de IA. Sin ella, `/ask` responde con un aviso amigable en vez de fallar |
 | `SPOTIFY_CLIENT_ID` | ➖ | Client ID de Spotify (música) |
 | `SPOTIFY_CLIENT_SECRET` | ➖ | Client Secret de Spotify (música) |
 | `TWITCH_CLIENT_ID` | ➖ | Client ID de Twitch (notificaciones de stream) |

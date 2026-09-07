@@ -1,10 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
-const fs = require('fs');
-const path = require('path');
-
-const dbPath = path.join(__dirname, '../levels.json');
-function getDB() { return JSON.parse(fs.readFileSync(dbPath, 'utf8')); }
-function saveDB(db) { fs.writeFileSync(dbPath, JSON.stringify(db, null, 2)); }
+const { getDB, saveDB } = require('../utils/levels-db');
 
 function parseRequisito(texto) {
   // Detectar horas de voz: "10h", "10 horas", "10h de voz"

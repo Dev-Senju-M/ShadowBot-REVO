@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { PermissionFlagsBits } = require('discord.js');
 
 const dbPath = path.join(__dirname, '../torneos.json');
 
@@ -212,6 +213,14 @@ function participanteDeUsuario(torneo, userId) {
     return torneo.participantes.find(p => p.capitanId === userId || p.miembros.includes(userId)) || null;
 }
 
+// Determina si quien interactúa puede administrar el torneo: admins,
+// managers del servidor, o el propio organizador que lo creó.
+function esOrganizador(interaction, torneo) {
+    return interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
+        interaction.member.permissions.has(PermissionFlagsBits.ManageGuild) ||
+        interaction.user.id === torneo.organizadorId;
+}
+
 module.exports = {
     getDB,
     saveDB,
@@ -230,4 +239,5 @@ module.exports = {
     calcularPuntosReporte,
     usuarioEsDelParticipante,
     participanteDeUsuario,
+    esOrganizador,
 };

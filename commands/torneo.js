@@ -16,11 +16,7 @@ const COLOR_ERR = '#ED4245';
 const COLOR_PUNTOS = '#FEE75C';
 const FOOTER = 'Sistema de Torneos • Santuario Mocho 🌑';
 
-function esOrganizador(interaction, torneo) {
-    return interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
-        interaction.member.permissions.has(PermissionFlagsBits.ManageGuild) ||
-        interaction.user.id === torneo.organizadorId;
-}
+const { esOrganizador } = T;
 
 function torneosDisponibles(guildId) {
     return T.getTorneosGuild(guildId);

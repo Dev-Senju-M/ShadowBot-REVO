@@ -1,15 +1,11 @@
-const { EmbedBuilder, PermissionFlagsBits, MessageFlags } = require('discord.js');
+const { EmbedBuilder, MessageFlags } = require('discord.js');
 const T = require('../utils/torneos');
 const { embedLlaves, embedTabla } = require('../commands/torneo');
 
 const COLOR_OK = '#57F287';
 const COLOR_ERR = '#ED4245';
 
-function esOrganizador(interaction, torneo) {
-    return interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
-        interaction.member.permissions.has(PermissionFlagsBits.ManageGuild) ||
-        interaction.user.id === torneo.organizadorId;
-}
+const { esOrganizador } = T;
 
 function buscarTorneoConPendiente(guildId, pendienteId) {
     const lista = T.getTorneosGuild(guildId);

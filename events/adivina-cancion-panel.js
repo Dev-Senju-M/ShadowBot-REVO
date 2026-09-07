@@ -3,7 +3,6 @@ const {
     ButtonBuilder,
     ButtonStyle,
     MessageFlags,
-    PermissionFlagsBits,
 } = require('discord.js');
 const {
     getGame,
@@ -13,24 +12,10 @@ const {
     buildLobbyEmbed,
     buildBuzzerEmbed,
     nombreCancion,
+    esModerador,
+    buildJoinRow,
+    buildBuzzerRow,
 } = require('../utils/song-game');
-
-function esModerador(member) {
-    return member.permissions.has(PermissionFlagsBits.ManageMessages) ||
-        member.permissions.has(PermissionFlagsBits.Administrator);
-}
-
-function buildJoinRow() {
-    return new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('acj_unirse').setLabel('🎤 Unirme').setStyle(ButtonStyle.Success)
-    );
-}
-
-function buildBuzzerRow(disabled = false) {
-    return new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('acp_pedir').setLabel('🙋 Pedir la palabra').setStyle(ButtonStyle.Primary).setDisabled(disabled)
-    );
-}
 
 function buildHolderRow() {
     return new ActionRowBuilder().addComponents(

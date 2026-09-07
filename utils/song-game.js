@@ -1,4 +1,10 @@
-const { EmbedBuilder } = require('discord.js');
+const {
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    PermissionFlagsBits,
+} = require('discord.js');
 
 // Duración del clip: se fuerza a estar siempre entre estos límites (segundos)
 const MIN_DURACION = 5;
@@ -110,6 +116,24 @@ function medalla(i) {
     return ['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`;
 }
 
+// Permite moderar el juego a quienes pueden gestionar mensajes o son administradores.
+function esModerador(member) {
+    return member.permissions.has(PermissionFlagsBits.ManageMessages) ||
+        member.permissions.has(PermissionFlagsBits.Administrator);
+}
+
+function buildJoinRow() {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('acj_unirse').setLabel('🎤 Unirme').setStyle(ButtonStyle.Success)
+    );
+}
+
+function buildBuzzerRow(disabled = false) {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('acp_pedir').setLabel('🙋 Pedir la palabra').setStyle(ButtonStyle.Primary).setDisabled(disabled)
+    );
+}
+
 module.exports = {
     MIN_DURACION,
     MAX_DURACION,
@@ -125,4 +149,7 @@ module.exports = {
     buildLobbyEmbed,
     buildBuzzerEmbed,
     buildScoreboardEmbed,
+    esModerador,
+    buildJoinRow,
+    buildBuzzerRow,
 };

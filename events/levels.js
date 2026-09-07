@@ -1,11 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
 const { sendModLog } = require('../modlog');
-
-const dbPath = path.join(__dirname, '../levels.json');
-function getDB() { return JSON.parse(fs.readFileSync(dbPath, 'utf8')); }
-function saveDB(db) { fs.writeFileSync(dbPath, JSON.stringify(db, null, 2)); }
+const { getDB, saveDB } = require('../utils/levels-db');
 
 // Hora Guatemala GMT-6
 function horaGuatemala() {
