@@ -3,12 +3,12 @@ const path = require('path');
 const axios = require('axios');
 
 const personalidadPath = path.join(__dirname, '../personalidad.json');
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const ANTHROPIC_VERSION = '2023-06-01';
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 
 const MODELOS_VALIDOS = {
-    rapido: 'claude-haiku-4-5-20251001',
-    equilibrado: 'claude-sonnet-5',
+    rapido: 'gpt-5.6-luna',       // más barato y rápido, ideal para /ask del día a día
+    equilibrado: 'gpt-5.6-terra', // más capaz, buen balance costo/calidad
+    potente: 'gpt-5.6-sol',       // el más capaz, más caro y lento
 };
 
 const DEFAULT_PERSONALIDAD = {
@@ -68,9 +68,9 @@ function marcarUso(userId) {
  * @returns {Promise<string>} Respuesta en texto plano.
  */
 async function preguntarIA(pregunta, opts = {}) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-        throw new AIError('No hay una ANTHROPIC_API_KEY configurada en el servidor.', 'sin_api_key');
+        throw new AIError('No hay una OPENAI_API_KEY configurada en el servidor.', 'sin_api_key');
     }
 
     const personalidad = getPersonalidad();
@@ -83,39 +83,35 @@ async function preguntarIA(pregunta, opts = {}) {
         .join('\n\n');
 
     const messages = [
+        { role: 'system', content: system },
         ...(opts.historial ?? []),
         { role: 'user', content: pregunta },
     ];
 
     try {
         const res = await axios.post(
-            ANTHROPIC_URL,
+            OPENAI_URL,
             {
                 model: personalidad.modelo || DEFAULT_PERSONALIDAD.modelo,
-                max_tokens: opts.maxTokens ?? 700,
-                system,
+                // Nota: los modelos GPT-5.x solo aceptan su temperature por defecto,
+                // así que no la enviamos explícitamente para evitar errores 400.
+                max_completion_tokens: opts.maxTokens ?? 700,
                 messages,
             },
             {
                 headers: {
-                    'x-api-key': apiKey,
-                    'anthropic-version': ANTHROPIC_VERSION,
+                    Authorization: `Bearer ${apiKey}`,
                     'content-type': 'application/json',
                 },
                 timeout: 30000,
             }
         );
 
-        const texto = res.data.content
-            ?.filter(block => block.type === 'text')
-            .map(block => block.text)
-            .join('\n')
-            .trim();
-
+        const texto = res.data.choices?.[0]?.message?.content?.trim();
         return texto || 'No obtuve una respuesta de la IA. Intenta de nuevo.';
     } catch (error) {
         const detalle = error.response?.data?.error?.message || error.message;
-        console.error('[ai.js] Error consultando Anthropic API:', detalle);
+        console.error('[ai.js] Error consultando OpenAI API:', detalle);
         throw new AIError(`La IA no pudo responder: ${detalle}`, 'api_error');
     }
 }

@@ -38,7 +38,8 @@ module.exports = {
                 .setRequired(false)
                 .addChoices(
                     { name: 'Rápido (recomendado, más barato)', value: MODELOS_VALIDOS.rapido },
-                    { name: 'Equilibrado (más capaz, más lento/caro)', value: MODELOS_VALIDOS.equilibrado },
+                    { name: 'Equilibrado (más capaz, costo medio)', value: MODELOS_VALIDOS.equilibrado },
+                    { name: 'Potente (el más capaz, más lento/caro)', value: MODELOS_VALIDOS.potente },
                 ))
         .addBooleanOption(opt =>
             opt.setName('activada')

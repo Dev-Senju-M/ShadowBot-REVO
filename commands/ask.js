@@ -7,7 +7,7 @@ const MAX_DESCRIPCION = 4000; // margen bajo el límite de 4096 de discord.js
 function mensajeError(error) {
     if (error instanceof AIError) {
         if (error.tipo === 'sin_api_key') {
-            return '⚠️ La IA no está configurada todavía. Un administrador debe agregar `ANTHROPIC_API_KEY` en el `.env` del bot.';
+            return '⚠️ La IA no está configurada todavía. Un administrador debe agregar `OPENAI_API_KEY` en el `.env` del bot.';
         }
         if (error.tipo === 'desactivada') {
             return '🌑 Las funciones de IA están desactivadas en este servidor. Un admin puede reactivarlas con `/setup-ia activada:true`.';

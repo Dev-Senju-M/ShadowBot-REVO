@@ -95,7 +95,7 @@ Canales de voz que se actualizan solos cada 10 minutos mostrando miembros totale
 Configura triggers personalizados (texto → respuesta automática) sin tocar código, directamente desde Discord.
 
 ### 🧠 IA — `/ask`
-El bot tiene un personaje con IA propio (nombre y personalidad configurables) al que cualquiera puede preguntarle algo con `/ask`. Los administradores ajustan el tono, el modelo y pueden activar/desactivar la IA en cualquier momento con `/setup-ia`, sin tocar código. Requiere una `ANTHROPIC_API_KEY` (ver [Variables de Entorno](#-variables-de-entorno)).
+El bot tiene un personaje con IA propio (nombre y personalidad configurables) al que cualquiera puede preguntarle algo con `/ask`. Los administradores ajustan el tono, el modelo y pueden activar/desactivar la IA en cualquier momento con `/setup-ia`, sin tocar código. Requiere una `OPENAI_API_KEY` (ver [Variables de Entorno](#-variables-de-entorno)).
 
 ---
 
@@ -182,7 +182,7 @@ ShadowBot-REVO/
 │   ├── torneos.js
 │   ├── fortnite-shop.js
 │   ├── generate-shop-image.js
-│   ├── ai.js                # Wrapper de IA (Anthropic API) + personalidad
+│   ├── ai.js                # Wrapper de IA (OpenAI API) + personalidad
 │   └── song-game.js
 ├── img/
 ├── config.json              # Configuración general del servidor
@@ -284,7 +284,7 @@ Cada `git push` a `main` redespliega el bot automáticamente. El bot expone adem
 |----------|:---:|-------------|
 | `TOKEN` | ✅ | Token del bot de Discord |
 | `CLIENT_ID` | ✅ | Application ID de Discord |
-| `ANTHROPIC_API_KEY` | ➖ | API key de Anthropic para `/ask` y demás funciones de IA. Sin ella, `/ask` responde con un aviso amigable en vez de fallar |
+| `OPENAI_API_KEY` | ➖ | API key de OpenAI para `/ask` y demás funciones de IA. Sin ella, `/ask` responde con un aviso amigable en vez de fallar |
 | `SPOTIFY_CLIENT_ID` | ➖ | Client ID de Spotify (música) |
 | `SPOTIFY_CLIENT_SECRET` | ➖ | Client Secret de Spotify (música) |
 | `TWITCH_CLIENT_ID` | ➖ | Client ID de Twitch (notificaciones de stream) |
