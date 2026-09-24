@@ -38,6 +38,7 @@
     "libsodium-wrappers": "^0.7.15",
     "opusscript": "^0.1.1",
     "patch-package": "^8.0.0",
+    "pg": "^8.23.0",
     "postinstall-postinstall": "^2.1.0"
   }
 }

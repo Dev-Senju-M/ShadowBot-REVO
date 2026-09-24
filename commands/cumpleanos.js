@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const dbPath = path.join(__dirname, '../cumpleanos.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -31,7 +29,7 @@ module.exports = {
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
-    const db = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    const db = store.get('cumpleanos');
     const meses = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     if (sub === 'register') {
@@ -48,7 +46,7 @@ module.exports = {
       const edad = calcularEdad(dia, mes, anio);
 
       db.usuarios[interaction.user.id] = { dia, mes, anio, tag: interaction.user.tag };
-      fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+      store.set('cumpleanos', db);
 
       const embed = new EmbedBuilder()
         .setColor('#9B59B6')
@@ -114,7 +112,7 @@ module.exports = {
 
       const canal = interaction.options.getChannel('channel');
       db.canal = canal.id;
-      fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+      store.set('cumpleanos', db);
 
       await interaction.reply({
         embeds: [

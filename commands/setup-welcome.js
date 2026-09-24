@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const configPath = path.join(__dirname, '../config.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -38,7 +36,7 @@ module.exports = {
     const color = interaction.options.getString('color');
 
     // Leer config actual
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = store.get('config');
 
     // Actualizar valores
     config.welcomeChannel = canal.id;
@@ -48,7 +46,7 @@ module.exports = {
     if (color) config.welcomeColor = color;
 
     // Guardar
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    store.set('config', config);
 
     const embed = new EmbedBuilder()
       .setColor('#57F287')

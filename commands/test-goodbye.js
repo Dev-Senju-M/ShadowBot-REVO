@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const configPath = path.join(__dirname, '../config.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,7 +9,7 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = store.get('config');
 
     if (!config.goodbyeChannel) {
       return interaction.reply({ content: '❌ Primero configura el canal con `/setup-goodbye`', flags: MessageFlags.Ephemeral });

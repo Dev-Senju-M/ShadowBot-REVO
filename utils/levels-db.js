@@ -1,14 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-
-const dbPath = path.join(__dirname, '../levels.json');
+const store = require('./db');
 
 function getDB() {
-  return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  return store.get('levels');
 }
 
 function saveDB(db) {
-  fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+  store.set('levels', db);
 }
 
-module.exports = { getDB, saveDB, dbPath };
+module.exports = { getDB, saveDB };

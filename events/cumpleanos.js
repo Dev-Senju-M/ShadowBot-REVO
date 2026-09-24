@@ -1,8 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const dbPath = path.join(__dirname, '../cumpleanos.json');
 
 module.exports = (client) => {
   client.once('clientReady', () => {
@@ -16,7 +14,7 @@ module.exports = (client) => {
       // Solo revisar a medianoche Guatemala
       if (horaGT.getHours() !== 0) return;
 
-      const db = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+      const db = store.get('cumpleanos');
       if (!db.canal) return;
 
       const diaHoy = horaGT.getDate();

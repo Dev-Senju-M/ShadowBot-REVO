@@ -1,16 +1,12 @@
-const fs = require('fs');
-const path = require('path');
+const store = require('./db');
 const { PermissionFlagsBits } = require('discord.js');
 
-const dbPath = path.join(__dirname, '../torneos.json');
-
 function getDB() {
-    if (!fs.existsSync(dbPath)) fs.writeFileSync(dbPath, JSON.stringify({ torneos: {} }, null, 2));
-    return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    return store.get('torneos');
 }
 
 function saveDB(db) {
-    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+    store.set('torneos', db);
 }
 
 function genId(prefix = 't') {

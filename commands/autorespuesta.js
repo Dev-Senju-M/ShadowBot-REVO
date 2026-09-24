@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const archivoPath = path.join(__dirname, '../autorespuestas.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -27,14 +25,14 @@ module.exports = {
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
-    const data = JSON.parse(fs.readFileSync(archivoPath, 'utf8'));
+    const data = store.get('autorespuestas');
 
     if (sub === 'agregar') {
       const trigger = interaction.options.getString('trigger');
       const respuesta = interaction.options.getString('respuesta');
 
       data[trigger] = respuesta;
-      fs.writeFileSync(archivoPath, JSON.stringify(data, null, 2));
+      store.set('autorespuestas', data);
 
       await interaction.reply({
         embeds: [
@@ -58,7 +56,7 @@ module.exports = {
       }
 
       delete data[trigger];
-      fs.writeFileSync(archivoPath, JSON.stringify(data, null, 2));
+      store.set('autorespuestas', data);
 
       await interaction.reply({
         embeds: [

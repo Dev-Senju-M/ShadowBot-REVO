@@ -1,15 +1,13 @@
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 const { MessageFlags } = require('discord.js');
 
-const configPath = path.join(__dirname, '../config.json');
 
 module.exports = (client) => {
   client.on('interactionCreate', async (interaction) => {
     if (!interaction.isButton()) return;
     if (interaction.customId !== 'verificar') return;
 
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = store.get('config');
     const member = interaction.member;
 
     if (!config.autoRole) {

@@ -1,8 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
-const fs = require('fs');
+const store = require('../utils/db');
 const path = require('path');
 
-const configPath = path.join(__dirname, '../config.json');
 
 const DEFAULT_WELCOME =
     '### 🌑 HEY {user}, **BIENVENID@ AL SANTUARIO MOCHO** 🌙\n\n' +
@@ -23,7 +22,7 @@ module.exports = (client) => {
 
   // ✅ BIENVENIDA
   client.on('guildMemberAdd', async (member) => {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = store.get('config');
     if (!config.welcomeChannel) return;
 
     const canal = member.guild.channels.cache.get(config.welcomeChannel);
@@ -62,7 +61,7 @@ module.exports = (client) => {
 
   // ❌ DESPEDIDA
   client.on('guildMemberRemove', async (member) => {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = store.get('config');
     if (!config.goodbyeChannel) return;
 
     const canal = member.guild.channels.cache.get(config.goodbyeChannel);

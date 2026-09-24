@@ -1,8 +1,6 @@
+const store = require('../utils/db');
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ChannelType , MessageFlags} = require('discord.js');
-const fs   = require('fs');
-const path = require('path');
 
-const configPath = path.join(__dirname, '../config.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -39,9 +37,9 @@ module.exports = {
 
     // Guardar en config.json
     try {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const config = store.get('config');
       config.fortniteShopChannel = canal.id;
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      store.set('config', config);
     } catch (err) {
       console.error('[setup-tienda-fortnite] Error guardando config:', err.message);
       return interaction.followUp({ content: '❌ Error guardando la configuración.', flags: MessageFlags.Ephemeral });

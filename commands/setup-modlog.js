@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const configPath = path.join(__dirname, '../config.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,9 +12,9 @@ module.exports = {
 
   async execute(interaction) {
     const canal = interaction.options.getChannel('canal');
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = store.get('config');
     config.modLogChannel = canal.id;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    store.set('config', config);
 
     await interaction.reply({
       embeds: [

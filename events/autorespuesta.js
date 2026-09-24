@@ -1,13 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const archivoPath = path.join(__dirname, '../autorespuestas.json');
 
 module.exports = (client) => {
   client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
-    const data = JSON.parse(fs.readFileSync(archivoPath, 'utf8'));
+    const data = store.get('autorespuestas');
 
     // Verificar si mencionaron al bot
     if (message.mentions.has(client.user)) {

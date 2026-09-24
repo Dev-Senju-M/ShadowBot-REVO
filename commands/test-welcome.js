@@ -1,8 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder , MessageFlags} = require('discord.js');
-const fs = require('fs');
+const store = require('../utils/db');
 const path = require('path');
 
-const configPath = path.join(__dirname, '../config.json');
 
 const DEFAULT_WELCOME =
     '### 🌑 HEY {user}, **BIENVENID@ AL SANTUARIO MOCHO** 🌙\n\n' +
@@ -16,7 +15,7 @@ module.exports = {
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = store.get('config');
 
     if (!config.welcomeChannel) {
       return interaction.reply({ content: '❌ Primero configura el canal con `/setup-welcome`', flags: MessageFlags.Ephemeral });

@@ -1,8 +1,6 @@
-const fs = require('fs');
-const path = require('path');
+const store = require('./db');
 const axios = require('axios');
 
-const personalidadPath = path.join(__dirname, '../personalidad.json');
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 
 const MODELOS_VALIDOS = {
@@ -32,7 +30,7 @@ class AIError extends Error {
 
 function getPersonalidad() {
     try {
-        return { ...DEFAULT_PERSONALIDAD, ...JSON.parse(fs.readFileSync(personalidadPath, 'utf8')) };
+        return { ...DEFAULT_PERSONALIDAD, ...store.get('personalidad') };
     } catch {
         return { ...DEFAULT_PERSONALIDAD };
     }
@@ -41,7 +39,7 @@ function getPersonalidad() {
 function savePersonalidad(cambios) {
     const actual = getPersonalidad();
     const nueva = { ...actual, ...cambios };
-    fs.writeFileSync(personalidadPath, JSON.stringify(nueva, null, 2));
+    store.set('personalidad', nueva);
     return nueva;
 }
 

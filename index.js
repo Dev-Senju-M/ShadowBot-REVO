@@ -105,4 +105,19 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-client.login(process.env.TOKEN);
+const store = require('./utils/db');
+
+// Guarda los datos pendientes antes de que Railway detenga el contenedor
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.once(sig, async () => {
+    await store.close();
+    process.exit(0);
+  });
+}
+
+store.init()
+  .then(() => client.login(process.env.TOKEN))
+  .catch((err) => {
+    console.error('[db] No se pudo inicializar la base de datos:', err);
+    process.exit(1);
+  });

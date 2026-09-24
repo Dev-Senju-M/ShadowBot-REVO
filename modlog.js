@@ -1,10 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+const store = require('./utils/db');
 
-const configPath = path.join(__dirname, 'config.json');
 
 function leerConfig() {
-  return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  return store.get('config');
 }
 
 async function enviarA(guild, channelId, embed) {

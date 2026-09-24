@@ -1,15 +1,10 @@
 const { EmbedBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
 const PREFIX = '!';
-const econPath = path.join(__dirname, '../economia.json');
 
-function getEcon() {
-  if (!fs.existsSync(econPath)) fs.writeFileSync(econPath, JSON.stringify({ usuarios: {} }, null, 2));
-  return JSON.parse(fs.readFileSync(econPath, 'utf8'));
-}
-function saveEcon(db) { fs.writeFileSync(econPath, JSON.stringify(db, null, 2)); }
+function getEcon() { return store.get('economia'); }
+function saveEcon(db) { store.set('economia', db); }
 function getUser(db, userId) {
   if (!db.usuarios[userId]) db.usuarios[userId] = { monedas: 0, ultimo_daily: null };
   return db.usuarios[userId];

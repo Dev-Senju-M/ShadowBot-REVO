@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const store = require('../utils/db');
 
-const configPath = path.join(__dirname, '../config.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,7 +14,7 @@ module.exports = {
 
     async execute(interaction) {
         const rol = interaction.options.getRole('rol_sin_verificar');
-        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        const config = store.get('config');
 
         if (config.autoRole && rol.id === config.autoRole) {
             return interaction.reply({
@@ -26,7 +24,7 @@ module.exports = {
         }
 
         config.unverifiedRole = rol.id;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        store.set('config', config);
 
         const embed = new EmbedBuilder()
             .setColor('#57F287')
