@@ -139,10 +139,13 @@ function calcularEdad(dia, mes, anio) {
 }
 
 function proximoCumple(dia, mes) {
-  const hoy = new Date();
-  const anioActual = hoy.getFullYear();
-  let proxFecha = new Date(anioActual, mes - 1, dia);
-  if (proxFecha <= hoy) proxFecha = new Date(anioActual + 1, mes - 1, dia);
-  const diff = Math.ceil((proxFecha - hoy) / (1000 * 60 * 60 * 24));
-  return diff === 0 ? '🎉 **¡Hoy es tu cumpleaños!**' : `**${diff} days away** <t:${Math.floor(proxFecha.getTime()/1000)}:D>`;
+  // Fecha de hoy en Guatemala (GMT-6), como día calendario en UTC
+  const gt = new Date(Date.now() - 6 * 3600000);
+  const hoy = Date.UTC(gt.getUTCFullYear(), gt.getUTCMonth(), gt.getUTCDate());
+  let prox = Date.UTC(gt.getUTCFullYear(), mes - 1, dia);
+  if (prox < hoy) prox = Date.UTC(gt.getUTCFullYear() + 1, mes - 1, dia);
+  const diff = Math.round((prox - hoy) / 86400000);
+  // Mediodía UTC para que Discord muestre el mismo día en cualquier zona horaria
+  const ts = Math.floor((prox + 12 * 3600000) / 1000);
+  return diff === 0 ? '🎉 **¡Hoy es tu cumpleaños!**' : `**${diff} days away** <t:${ts}:D>`;
 }
