@@ -9,7 +9,7 @@
 **Moderación · Niveles · Torneos · Economía · Música · Minijuegos · Logs de seguridad — en un solo bot**
 
 [![Discord.js](https://img.shields.io/badge/discord.js-v14-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.js.org)
-[![Node.js](https://img.shields.io/badge/node.js-v18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/node.js-v22.12%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![Railway](https://img.shields.io/badge/hosted%20on-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app)
 [![License](https://img.shields.io/badge/license-Privado-red?style=for-the-badge)](#-licencia)
 
@@ -37,6 +37,13 @@ El corazón competitivo del bot. Organiza torneos de **Fortnite, Valorant o cual
 - Inscripción **individual o por equipos**, con capitán e integrantes.
 - Flujo de reporte con doble validación: el jugador propone el resultado → el organizador confirma o rechaza con botones — cero trampas, cero discusiones.
 - Todo queda registrado y consultable en cualquier momento con `/torneo ver`.
+
+### 🎮 Buscar grupo y salas de voz *(nuevo)*
+Para que nadie juegue solo:
+
+- `/buscar-grupo` publica un anuncio en el canal de grupos y menciona el rol del juego. Los demás se suman con **Me uno**; al completarse (o con **Empezar ya**) el bot crea una sala de voz para el grupo.
+- Al entrar a **➕ Crear sala** cada persona obtiene su propia sala de voz, que se borra sola al quedar vacía.
+- El dueño de una sala la controla con `/sala`: nombre, límite de personas, bloquear y desbloquear. Si se va, la sala pasa a otro de los presentes.
 
 ### 📈 Niveles y Logros
 - Sistema de XP por **horas de voz** y **mensajes enviados**.
@@ -106,6 +113,8 @@ El bot tiene un personaje con IA propio (nombre y personalidad configurables) al
 | Comando | Descripción |
 |---|---|
 | `/torneo crear` `inscribir` `iniciar` `ver` `lista` `reportar` `reportar-puntos` `configurar-puntos` `cancelar` | Sistema completo de torneos (llaves o puntos) |
+| `/buscar-grupo` | Busca gente para jugar; crea una sala de voz al completarse |
+| `/sala nombre` `limite` `bloquear` `desbloquear` | Controla tu sala de voz temporal |
 | `/levels profile` `ranking` `list` `addlevel` `removelevel` `setchannel` `give` | Sistema de niveles y XP |
 | `/achievement add` `remove` `list` | Logros vinculados a roles |
 | `/birthday register` `view` `list` `channel` | Sistema de cumpleaños |
@@ -122,6 +131,8 @@ El bot tiene un personaje con IA propio (nombre y personalidad configurables) al
 | `/setup-welcome` `setup-goodbye` `setup-rules` `setup-verificacion` | Configuración de onboarding |
 | `/setup-modlog` `setup-logs` `setup-security-logs` | Configuración de canales de logs |
 | `/setup-tienda-fortnite` | Configura el canal de la tienda automática |
+| `/setup-grupos canal` `salas` `juego-agregar` `juego-quitar` `juegos` | Configura buscar grupo y las salas temporales |
+| `/setup-novedades canal` `vista-previa` `publicar` | Canal de novedades del bot, vista previa y publicación manual |
 | `/test-welcome` `test-goodbye` | Pruebas de mensajes |
 
 ### Comandos con prefijo (`!`) — economía y diversión
@@ -148,52 +159,33 @@ El bot tiene un personaje con IA propio (nombre y personalidad configurables) al
 
 ```
 ShadowBot-REVO/
-├── commands/              # Todos los slash commands
-│   ├── torneo.js
-│   ├── levels.js
-│   ├── achievement.js
-│   ├── adivina-cancion.js
-│   ├── cumpleanos.js
-│   ├── mcc.js
-│   ├── autorespuesta.js
-│   ├── tienda-fortnite.js
-│   ├── twitch.js
-│   ├── stats.js
-│   ├── ask.js              # /ask — chat con la IA del bot
-│   ├── setup-ia.js         # Configuración de personalidad de la IA
-│   ├── ban.js / kick.js / mute.js / clear.js
-│   ├── play.js / queue.js / skip.js / stop.js / volume.js
-│   ├── setup-*.js         # Comandos de configuración
-│   └── test-*.js
-├── events/                 # Listeners de eventos de Discord
-│   ├── torneo-panel.js
-│   ├── levels.js
-│   ├── welcome.js / verify.js
-│   ├── activity-logs.js / security-logs.js
-│   ├── twitch-live.js
-│   ├── fortnite-shop.js
-│   ├── cumpleanos.js
-│   ├── adivina-cancion-panel.js
-│   ├── autorespuesta.js
-│   ├── prefix-commands.js  # !daily, !balance, !ruleta, etc.
-│   ├── stats-channels.js
-│   └── music.js
-├── utils/                  # Lógica reutilizable
-│   ├── torneos.js
-│   ├── fortnite-shop.js
-│   ├── generate-shop-image.js
-│   ├── ai.js                # Wrapper de IA (OpenAI API) + personalidad
-│   └── song-game.js
-├── img/
-├── config.json              # Configuración general del servidor
-├── torneos.json              # Base de datos de torneos
-├── levels.json                # Niveles, logros y progreso de usuarios
-├── economia.json               # Saldos de la economía interna
-├── cumpleanos.json              # Cumpleaños registrados
-├── autorespuestas.json           # Triggers de auto-respuesta
-├── personalidad.json              # Nombre/tono/modelo/estado de la IA
-├── deploy-commands.js
-├── index.js
+├── src/                       # Código del bot
+│   ├── index.js               # Punto de entrada (carga comandos y eventos automáticamente)
+│   ├── deploy-commands.js     # Registra los slash commands en Discord
+│   ├── commands/              # Slash commands (un archivo por comando)
+│   │   ├── torneo.js          # /torneo — reparte cada subcomando a torneo/
+│   │   ├── torneo/            # crear, inscribir, reportar, ... (un archivo por subcomando)
+│   │   ├── ban.js / kick.js / mute.js / clear.js
+│   │   ├── play.js / queue.js / skip.js / stop.js / volume.js
+│   │   ├── setup-*.js         # Comandos de configuración
+│   │   └── ...
+│   ├── prefix-commands/       # Comandos con ! (daily, balance, ruleta, trivia, ...)
+│   ├── events/                # Listeners de Discord (se cargan automáticamente)
+│   └── utils/                 # Lógica compartida
+│       ├── db.js              # Almacén de datos (JSON local o Postgres)
+│       ├── modlog.js          # Envío a los canales de logs
+│       ├── logros.js          # Niveles y logros
+│       ├── torneos.js / torneo-embeds.js
+│       ├── twitch.js / fortnite-shop.js / ai.js / song-game.js
+│       └── ...
+├── data/                      # Datos locales (ignorados por git)
+│   └── *.example.json         # Plantillas versionadas sin datos reales
+├── web/                       # Página de estado (Netlify)
+│   ├── index.html
+│   └── build.js
+├── img/                       # Imágenes usadas por el bot
+├── patches/                   # Parches de dependencias (patch-package)
+├── test/                      # Tests (npm test)
 └── package.json
 ```
 
@@ -202,7 +194,7 @@ ShadowBot-REVO/
 ## ⚙️ Instalación
 
 ### Requisitos
-- Node.js v18 o superior
+- Node.js v22.12 o superior
 - Una aplicación de Discord en el [Developer Portal](https://discord.com/developers/applications)
 - (Opcional) Credenciales de Spotify para música vía [Spotify Dashboard](https://developer.spotify.com/dashboard)
 - (Opcional) Credenciales de Twitch para notificaciones de stream
@@ -211,7 +203,7 @@ ShadowBot-REVO/
 
 **1. Clona el repositorio**
 ```bash
-git clone https://github.com/NET-Jason/ShadowBot-REVO.git
+git clone https://github.com/Dev-Senju-M/ShadowBot-REVO.git
 cd ShadowBot-REVO
 ```
 
@@ -222,7 +214,7 @@ npm install
 
 **3. Configura las variables de entorno**
 
-Crea un archivo `.env` en la raíz:
+Copia `.env.example` a `.env` en la raíz y completa los valores:
 ```env
 TOKEN=tu_discord_bot_token
 CLIENT_ID=tu_discord_application_id
@@ -238,11 +230,22 @@ TWITCH_CHANNEL=nombre_del_canal
 TWITCH_NOTIFY_CHANNEL=id_del_canal_de_discord
 ```
 
-**4. Registra los comandos slash e inicia el bot**
+**4. Registra los comandos slash**
+```bash
+npm run deploy
+```
+Si defines `GUILD_ID` en el `.env`, los comandos se registran solo en ese servidor y aparecen al instante (ideal para pruebas). Sin `GUILD_ID` se registran de forma global (pueden tardar hasta una hora). Solo hace falta repetirlo cuando cambias la definición de un comando.
+
+**5. Inicia el bot**
 ```bash
 npm start
 ```
-Esto ejecuta automáticamente `deploy-commands.js` (registra todos los slash commands) y luego levanta el bot con `index.js`.
+
+**Tests** (no se conectan a Discord)
+```bash
+npm test
+```
+Revisan que todos los comandos y eventos carguen bien formados y prueban la lógica de llaves y puntos de los torneos.
 
 ---
 
@@ -260,8 +263,14 @@ Todo se configura con slash commands, sin tocar código:
 /setup-security-logs      → Canal de logs de seguridad (roles, canales, webhooks)
 /setup-tienda-fortnite    → Canal donde se publica la tienda de Fortnite cada día
 /setup-ia                 → Nombre, personalidad, modelo y activar/desactivar la IA
+/setup-grupos canal       → Canal donde se publican los anuncios de /buscar-grupo
+/setup-grupos salas       → Crea la categoría de salas con el canal "➕ Crear sala"
+/setup-grupos juego-agregar → Agrega un juego y el rol que se menciona
+/setup-novedades canal    → Canal (y rol) donde el bot anuncia sus novedades
 /torneo crear             → Crea tu primer torneo
 ```
+
+> Para buscar grupo y salas temporales el bot necesita **Gestionar canales**, **Mover miembros** y **Gestionar roles** (para `/sala bloquear`). Si un rol de juego no es mencionable, dale también **Mencionar a todos**.
 
 ---
 
@@ -272,9 +281,27 @@ Este bot está preparado para desplegarse en [Railway](https://railway.app) con 
 1. Crea una cuenta en Railway con tu cuenta de GitHub
 2. Importa este repositorio
 3. Agrega tus variables de entorno en la pestaña **Variables**
-4. Railway detecta automáticamente el start command (`npm start`) gracias a `railway.json` / `nixpacks.toml`
+4. Railway usa el start command de `railway.json` (`npm run deploy && npm start`): registra los comandos y levanta el bot en cada despliegue
 
 Cada `git push` a `main` redespliega el bot automáticamente. El bot expone además un endpoint `/health` para monitoreo externo (uptime checks, dashboards, etc.).
+
+---
+
+## 📰 Anunciar una versión nueva
+
+Las novedades del bot se escriben en [`NOVEDADES.md`](NOVEDADES.md), pensadas para la comunidad. La versión más nueva va siempre arriba:
+
+```markdown
+## 1.1.0 — 2026-10-20
+### 🎮 Sección
+- Qué cambió, explicado para los miembros del servidor.
+```
+
+1. Escribe la sección nueva arriba en `NOVEDADES.md`.
+2. Revisa cómo se verá con `/setup-novedades vista-previa`.
+3. Despliega. Con `ANUNCIAR_NOVEDADES=true` en Railway, el bot la publica sola al arrancar en el canal de `/setup-novedades canal`.
+
+Si se juntan varias versiones sin anunciar, se publican todas (máximo 5), de la más vieja a la más nueva. `npm test` revisa que el archivo tenga un formato válido.
 
 ---
 
@@ -292,6 +319,7 @@ Cada `git push` a `main` redespliega el bot automáticamente. El bot expone adem
 | `TWITCH_CHANNEL` | ➖ | Nombre del canal de Twitch a monitorear |
 | `TWITCH_NOTIFY_CHANNEL` | ➖ | ID del canal de Discord donde avisar |
 | `HEALTH_PORT` | ➖ | Puerto del endpoint `/health` (default: 3000) |
+| `ANUNCIAR_NOVEDADES` | ➖ | `true` para publicar las novedades de `NOVEDADES.md` al arrancar (solo en producción) |
 
 ---
 
