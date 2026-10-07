@@ -19,6 +19,7 @@ const STORES = {
   autorespuestas: { files: ['autorespuestas.json', 'autorespuestas.example.json'], def: () => ({}) },
   personalidad:   { files: ['personalidad.json',   'personalidad.example.json'],   def: () => ({}) },
   torneos:        { files: ['torneos.json',        'torneos.example.json'],        def: () => ({ torneos: {} }) },
+  grupos:         { files: ['grupos.json',         'grupos.example.json'],         def: () => ({ guilds: {} }) },
 };
 
 const cache = new Map();
