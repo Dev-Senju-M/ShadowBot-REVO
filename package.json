@@ -2,23 +2,26 @@
   "name": "shadowbot-revo",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "postinstall": "patch-package",
-    "start": "node deploy-commands.js && node index.js"
+    "start": "node src/index.js",
+    "deploy": "node src/deploy-commands.js",
+    "deploy:clear-global": "node src/deploy-commands.js --clear-global",
+    "test": "node --test \"test/**/*.test.js\""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NET-Jason/ShadowBot-REVO.git"
+    "url": "git+https://github.com/Dev-Senju-M/ShadowBot-REVO.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/NET-Jason/ShadowBot-REVO/issues"
+    "url": "https://github.com/Dev-Senju-M/ShadowBot-REVO/issues"
   },
-  "homepage": "https://github.com/NET-Jason/ShadowBot-REVO#readme",
+  "homepage": "https://github.com/Dev-Senju-M/ShadowBot-REVO#readme",
   "dependencies": {
     "@discordjs/rest": "^2.6.1",
     "@discordjs/voice": "^0.19.2",
@@ -40,5 +43,8 @@
     "patch-package": "^8.0.0",
     "pg": "^8.23.0",
     "postinstall-postinstall": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }
