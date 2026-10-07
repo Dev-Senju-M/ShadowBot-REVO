@@ -1,2 +1,16 @@
-node_modules/ 
-.env 
+node_modules/
+.env
+
+# Datos locales del bot (se versionan solo las plantillas *.example.json)
+data/*.json
+!data/*.example.json
+
+# Archivos generados en ejecución
+bot.log
+*.log
+yt-cookies.txt
+
+# Configuración local de editores / herramientas
+.idea/
+.vscode/
+.claude/settings.local.json
