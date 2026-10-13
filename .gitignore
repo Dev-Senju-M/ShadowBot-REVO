@@ -14,3 +14,6 @@ yt-cookies.txt
 .idea/
 .vscode/
 .claude/settings.local.json
+
+# Maquetas del brainstorming visual
+.superpowers/

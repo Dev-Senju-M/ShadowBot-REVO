@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es" data-tema="normal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel · ShadowBot</title>
+  <link rel="icon" href="/panel/img/logo.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap">
+  <link rel="stylesheet" href="/panel/styles.css">
+</head>
+<body class="app">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <div class="decoracion" aria-hidden="true"></div>
+  <header class="barra-superior">
+    <button type="button" class="boton-icono boton-menu" id="boton-menu" aria-label="Abrir menú" aria-expanded="false" aria-controls="barra-lateral"></button>
+    <a class="marca-mini" href="#/inicio"><span class="mascota mascota-mini" data-estado="hola"></span><span class="marca">ShadowBot</span></a>
+    <div class="usuario" id="usuario"></div>
+  </header>
+  <nav class="barra-lateral" id="barra-lateral" aria-label="Secciones"></nav>
+  <main class="contenido" id="contenido" tabindex="-1"></main>
+  <div class="barra-guardar" id="barra-guardar" hidden>
+    <span>Tienes cambios sin guardar</span>
+    <div class="barra-guardar-botones">
+      <button type="button" class="boton boton-fantasma" id="boton-descartar">Descartar</button>
+      <button type="button" class="boton" id="boton-guardar">Guardar</button>
+    </div>
+  </div>
+  <div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
+  <script src="/panel/js/formato.js"></script>
+  <script src="/panel/js/iconos.js"></script>
+  <script src="/panel/js/mascota.js"></script>
+  <script src="/panel/js/api.js"></script>
+  <script src="/panel/js/secciones/inicio.js"></script>
+  <script src="/panel/js/secciones/bienvenida.js"></script>
+  <script src="/panel/js/app.js"></script>
+</body>
+</html>

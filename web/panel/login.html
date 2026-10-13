@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es" data-tema="normal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · ShadowBot</title>
+  <link rel="icon" href="/panel/img/logo.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap">
+  <link rel="stylesheet" href="/panel/styles.css">
+</head>
+<body class="pagina-login">
+  <div class="decoracion" aria-hidden="true"></div>
+  <main class="login">
+    <img class="login-logo" src="/panel/img/logo.webp" alt="ShadowBot">
+    <div class="mascota" data-estado="hola" aria-hidden="true"></div>
+    <h1 class="marca login-titulo">Panel de ShadowBot</h1>
+    <p class="login-texto">Configura el bot de tu servidor sin escribir comandos.</p>
+    <p class="login-error" id="login-error" role="alert" hidden></p>
+    <a class="boton boton-grande" href="/auth/login">Iniciar sesión con Discord</a>
+    <p class="login-nota">Solo para quienes tengan Administrador o Gestionar servidor.</p>
+  </main>
+  <script src="/panel/js/mascota.js"></script>
+  <script src="/panel/js/login.js"></script>
+</body>
+</html>

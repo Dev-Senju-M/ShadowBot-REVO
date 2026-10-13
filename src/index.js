@@ -2,7 +2,6 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { Client, GatewayIntentBits, Collection , MessageFlags} = require('discord.js');
 const fs = require('fs');
-const http = require('http');
 
 process.on('uncaughtException', (error) => {
   console.error('[uncaughtException]', error);
@@ -40,35 +39,12 @@ for (const file of eventFiles) {
 }
 
 
-let botReady = false;
-
 client.once('clientReady', () => {
   console.log(`✅ ShadowBot listo como ${client.user.tag}`);
-  botReady = true;
 });
 
-// Health endpoint — permite que la web page consulte el estado del bot
-const HEALTH_PORT = process.env.HEALTH_PORT || 3000;
-http.createServer((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
-  res.setHeader('Content-Type', 'application/json');
-
-  if (req.url === '/health' && req.method === 'GET') {
-    const status = !botReady ? 'starting' : (process.env.BOT_STATUS || 'online');
-    res.writeHead(200);
-    res.end(JSON.stringify({
-      status,
-      uptime: Math.floor(process.uptime()),
-      tag: client.user?.tag ?? null,
-    }));
-  } else {
-    res.writeHead(404);
-    res.end('{}');
-  }
-}).listen(HEALTH_PORT, () => {
-  console.log(`🌐 Health endpoint activo en puerto ${HEALTH_PORT}`);
-});
+// Servidor web: /health para la landing y el panel (si está configurado)
+require('./web/server').iniciarServidorWeb(client);
 
 client.on('interactionCreate', async interaction => {
   if (interaction.isAutocomplete()) {
