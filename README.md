@@ -171,6 +171,7 @@ ShadowBot-REVO/
 │   │   └── ...
 │   ├── prefix-commands/       # Comandos con ! (daily, balance, ruleta, trivia, ...)
 │   ├── events/                # Listeners de Discord (se cargan automáticamente)
+│   ├── web/                   # Servidor web: /health, login con Discord, API del panel
 │   └── utils/                 # Lógica compartida
 │       ├── db.js              # Almacén de datos (JSON local o Postgres)
 │       ├── modlog.js          # Envío a los canales de logs
@@ -180,9 +181,10 @@ ShadowBot-REVO/
 │       └── ...
 ├── data/                      # Datos locales (ignorados por git)
 │   └── *.example.json         # Plantillas versionadas sin datos reales
-├── web/                       # Página de estado (Netlify)
-│   ├── index.html
-│   └── build.js
+├── web/
+│   ├── index.html             # Landing pública (Netlify)
+│   ├── build.js
+│   └── panel/                 # Panel web (lo sirve el bot)
 ├── img/                       # Imágenes usadas por el bot
 ├── patches/                   # Parches de dependencias (patch-package)
 ├── test/                      # Tests (npm test)
@@ -287,6 +289,29 @@ Cada `git push` a `main` redespliega el bot automáticamente. El bot expone adem
 
 ---
 
+## 🖥️ Panel web
+
+El bot sirve un panel en `PANEL_URL/panel` para configurar el servidor sin escribir comandos. Secciones disponibles: **Bienvenida, despedida y verificación** (con vista previa en vivo), **Logs** (con mensaje de prueba), **Cumpleaños** (canal y lista con buscador y borrado), **Novedades** (vista previa y publicar), **Tienda Fortnite** (publicar ahora) **IA** (nombre, personalidad, modelo, activar y restablecer), **Buscar grupo** (canal, juegos con su rol y crear las salas temporales), **Niveles y logros** (niveles por actividad y logros especiales) y **Auto-respuestas**. Las listas se editan fila por fila y los errores se marcan en la celda exacta.
+
+- **Quién entra:** quien tenga **Administrador** o **Gestionar servidor** en el servidor. Se comprueba en cada acción: si pierdes el permiso, pierdes el acceso al instante.
+- **Inicio de sesión con Discord:** solo pide saber quién eres (`identify`); la sesión dura 7 días en una cookie firmada.
+- **Cambios registrados:** cada guardado se anuncia en el canal de logs de seguridad con quién cambió qué.
+- **Temas por temporada:** Halloween (1 oct – 2 nov) y Navidad (1 dic – 6 ene) se activan solos; `PANEL_TEMA` fuerza uno para probarlo.
+
+**Configurarlo**
+
+1. [Developer Portal](https://discord.com/developers/applications) → tu aplicación → **OAuth2**: copia el *Client Secret* y agrega en *Redirects* `https://<tu-dominio>/auth/callback` (y `http://localhost:3000/auth/callback` para probar en local).
+2. En Railway, genera un dominio público para el servicio (*Settings → Networking*).
+3. Agrega las variables `DISCORD_CLIENT_SECRET`, `PANEL_URL` (ese dominio), `SESSION_SECRET` y, si el bot está en varios servidores, `PANEL_GUILD_ID`. Para generar `SESSION_SECRET`:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+4. En *Ajustes del servidor → Roles*, sube el rol del bot por encima de los roles que quieras asignar desde el panel; si no, el panel los mostrará como no asignables.
+
+Sin esas variables el panel queda desactivado (aviso en el log) y el resto del bot funciona igual.
+
+---
+
 ## 📰 Anunciar una versión nueva
 
 Las novedades del bot se escriben en [`NOVEDADES.md`](NOVEDADES.md), pensadas para la comunidad. La versión más nueva va siempre arriba:
@@ -319,6 +344,11 @@ Si se juntan varias versiones sin anunciar, se publican todas (máximo 5), de la
 | `TWITCH_CHANNEL` | ➖ | Nombre del canal de Twitch a monitorear |
 | `TWITCH_NOTIFY_CHANNEL` | ➖ | ID del canal de Discord donde avisar |
 | `HEALTH_PORT` | ➖ | Puerto del endpoint `/health` (default: 3000) |
+| `DISCORD_CLIENT_SECRET` | ➖ | Client Secret de OAuth2 (panel web) |
+| `PANEL_URL` | ➖ | URL pública del bot; el panel queda en `PANEL_URL/panel` |
+| `SESSION_SECRET` | ➖ | Clave aleatoria larga para firmar las sesiones del panel |
+| `PANEL_GUILD_ID` | ➖ | Servidor que administra el panel (si el bot está en varios) |
+| `PANEL_TEMA` | ➖ | Fuerza el tema del panel: `normal`, `halloween` o `navidad` |
 | `ANUNCIAR_NOVEDADES` | ➖ | `true` para publicar las novedades de `NOVEDADES.md` al arrancar (solo en producción) |
 
 ---
