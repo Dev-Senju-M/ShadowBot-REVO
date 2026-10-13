@@ -10,7 +10,7 @@ const { temporadaActual } = require('./temporadas');
 const { ErrorAccion } = require('./secciones/comun');
 
 // Cada sección declara sus almacenes, leer/validar/guardar y sus acciones
-const SECCIONES = new Map(['bienvenida', 'logs', 'novedades', 'fortnite', 'cumpleanos', 'ia']
+const SECCIONES = new Map(['bienvenida', 'logs', 'novedades', 'fortnite', 'cumpleanos', 'ia', 'grupos', 'niveles', 'autorespuestas']
   .map(nombre => [nombre, require(`./secciones/${nombre}`)]));
 const METODOS_LECTURA = ['GET', 'HEAD'];
 
@@ -130,7 +130,7 @@ function rutasApi(client, cfg) {
     const { valores, errores } = seccion.validar(req.body, ctx);
     if (Object.keys(errores).length) return res.status(400).json({ errores });
     const antes = cargar(seccion);
-    aplicar(seccion, seccion.guardar(valores, antes));
+    aplicar(seccion, seccion.guardar(valores, antes, ctx));
     const despues = seccion.leer(cargar(seccion), ctx);
     const campos = diferencias(seccion.leer(antes, ctx), despues)
       .map(c => ({ name: c.campo, value: `${recortar(c.antes)} → ${recortar(c.despues)}` }));

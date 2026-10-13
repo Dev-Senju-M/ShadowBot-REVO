@@ -4,6 +4,7 @@ const { ChannelType, PermissionFlagsBits } = require('discord.js');
 
 const TIPOS_TEXTO = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
 const vacio = (v) => v === null || v === undefined || v === '';
+const enBlanco = (v) => vacio(v) || (typeof v === 'string' && !v.trim());
 
 // Error de una acción, con mensaje para el usuario y código HTTP
 class ErrorAccion extends Error {
@@ -47,8 +48,9 @@ function validarRol(id, guild, errores, campo, { asignable = true } = {}) {
   return rol.id;
 }
 
-function validarTexto(texto, errores, campo, { min = 0, max }) {
-  if (vacio(texto) || (typeof texto === 'string' && !texto.trim())) {
+// recortar: false conserva los espacios de los extremos (solo se rechaza el texto en blanco)
+function validarTexto(texto, errores, campo, { min = 0, max, recortar = true }) {
+  if (enBlanco(texto)) {
     if (min > 0) errores[campo] = 'Este campo no puede quedar vacío.';
     return null;
   }
@@ -56,7 +58,7 @@ function validarTexto(texto, errores, campo, { min = 0, max }) {
     errores[campo] = 'Texto inválido.';
     return null;
   }
-  const limpio = texto.trim();
+  const limpio = recortar ? texto.trim() : texto;
   if (limpio.length < min) {
     errores[campo] = `Mínimo ${min} caracteres.`;
     return null;
@@ -68,4 +70,60 @@ function validarTexto(texto, errores, campo, { min = 0, max }) {
   return limpio;
 }
 
-module.exports = { TIPOS_TEXTO, vacio, ErrorAccion, validarCanal, validarRol, validarTexto };
+// Entero entre min y max. Acepta números o texto con un número ("5")
+function validarNumero(valor, errores, campo, { min, max }) {
+  const numero = typeof valor === 'string' && valor.trim() !== '' ? Number(valor) : valor;
+  if (typeof numero !== 'number' || !Number.isInteger(numero)) {
+    errores[campo] = 'Escribe un número entero.';
+    return null;
+  }
+  if (numero < min || numero > max) {
+    errores[campo] = `Debe estar entre ${min} y ${max}.`;
+    return null;
+  }
+  return numero;
+}
+
+// Valida una lista de filas. Los errores quedan en `ruta.indice.columna` con el
+// índice de la lista recibida (el que ve el usuario). Devuelve las filas válidas.
+// - esVacia(fila): las filas vacías se descartan sin error.
+// - validarFila(fila, prefijo): devuelve la fila limpia y anota errores en prefijo.columna.
+// - claveUnica(fila) → [columna, clave]: marca la segunda aparición de una clave.
+function validarLista(filas, errores, ruta, { maximo, esVacia, validarFila, claveUnica }) {
+  if (filas === null || filas === undefined) return [];
+  if (!Array.isArray(filas)) {
+    errores[ruta] = 'Lista inválida.';
+    return [];
+  }
+  const vistas = new Map(); // clave -> índice de la primera fila que la usa
+  const limpias = [];
+  let utiles = 0;
+  filas.forEach((fila, i) => {
+    const prefijo = `${ruta}.${i}`;
+    if (!fila || typeof fila !== 'object' || Array.isArray(fila)) {
+      errores[prefijo] = 'Fila inválida.';
+      return;
+    }
+    if (esVacia(fila)) return;
+    utiles++;
+    const erroresAntes = Object.keys(errores).length;
+    const limpia = validarFila(fila, prefijo);
+    if (Object.keys(errores).length > erroresAntes) return;
+    if (claveUnica) {
+      const [columna, clave] = claveUnica(limpia);
+      if (vistas.has(clave)) {
+        errores[`${prefijo}.${columna}`] = `Repetido: ya está en la fila ${vistas.get(clave) + 1}.`;
+        return;
+      }
+      vistas.set(clave, i);
+    }
+    limpias.push(limpia);
+  });
+  if (utiles > maximo) errores[ruta] = `Máximo ${maximo} elementos.`;
+  return limpias;
+}
+
+module.exports = {
+  TIPOS_TEXTO, vacio, enBlanco, ErrorAccion,
+  validarCanal, validarRol, validarTexto, validarNumero, validarLista,
+};

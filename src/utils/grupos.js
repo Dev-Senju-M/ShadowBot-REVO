@@ -153,7 +153,7 @@ function elegirNuevoDueno(miembros, duenoActual) {
 
 module.exports = {
   DURACION_ANUNCIO_MS, SALA_VACIA_GRACIA_MS, CUPOS_MIN, CUPOS_MAX,
-  getGuild, update, allGuildIds,
+  guildVacio, getGuild, update, allGuildIds,
   buscarJuego, agregarJuego, quitarJuego, opcionesJuegos,
   crearAnuncio, anuncioDeCreador, unirse, salir, empezar, anunciosVencidos,
   salaDeDueno, elegirNuevoDueno,

@@ -1,0 +1,45 @@
+/* Editor de listas del panel (campo "lista" de formulario.js) */
+
+.editor.editor-ancho { grid-template-columns: minmax(0, 1fr); }
+.editor-ancho .editor-vista { max-width: 560px; }
+
+input[type="number"] {
+  width: 100%; padding: 10px 12px;
+  background: var(--campo); color: var(--texto);
+  border: 2px solid var(--borde); border-radius: 10px;
+  font: inherit;
+}
+input[type="number"]:focus { border-color: var(--acento); outline: none; box-shadow: 0 0 0 3px var(--brillo); }
+
+.campo-lista { margin-top: 8px; }
+.campo-lista > .etiqueta { margin-bottom: 4px; }
+.ayuda-lista { margin: 0 0 10px; }
+.lista-edit { display: flex; flex-direction: column; gap: 8px; }
+.lista-edit-cabecera, .fila-edit { display: grid; gap: 10px; align-items: start; }
+.lista-edit-cabecera { padding: 0 12px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--texto-3); }
+.fila-edit { padding: 10px; border: 2px solid var(--borde); border-radius: 12px; background: var(--violeta-2); }
+.fila-edit.con-error { border-color: var(--error); }
+.fila-edit .boton-icono:hover { color: var(--error); border-color: var(--error); }
+
+/* Columnas de cada lista (la última es el botón de quitar) */
+.lista-juegos .lista-edit-cabecera, .lista-juegos .fila-edit { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 38px; }
+.lista-niveles .lista-edit-cabecera, .lista-niveles .fila-edit { grid-template-columns: 84px minmax(0, 1.2fr) minmax(0, 1.3fr) 110px 120px 38px; }
+.lista-respuestas .lista-edit-cabecera, .lista-respuestas .fila-edit { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 38px; }
+.lista-especiales .lista-edit-cabecera, .lista-especiales .fila-edit { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+
+.celda { min-width: 0; }
+.celda-etiqueta { display: none; margin-bottom: 4px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--texto-3); }
+.celda textarea { min-height: 46px; }
+.celda .error-campo { margin-top: 4px; }
+.celda-fija strong { display: block; font-family: 'Permanent Marker', cursive; font-weight: 400; font-size: 17px; color: #fff; }
+.celda-fija .ayuda { display: block; margin: 2px 0 0; }
+.lista-vacia { margin: 0; padding: 14px; border: 2px dashed var(--borde); border-radius: 12px; color: var(--texto-3); text-align: center; }
+.boton-agregar { margin-top: 10px; }
+.boton-agregar .icono { width: 18px; height: 18px; }
+
+@media (max-width: 900px) {
+  .lista-edit-cabecera { display: none; }
+  .lista-juegos .fila-edit, .lista-niveles .fila-edit, .lista-respuestas .fila-edit, .lista-especiales .fila-edit { grid-template-columns: minmax(0, 1fr); }
+  .celda-etiqueta { display: block; }
+  .fila-edit .boton-icono { justify-self: end; }
+}

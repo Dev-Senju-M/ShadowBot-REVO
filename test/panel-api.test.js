@@ -12,6 +12,9 @@ const almacenes = {
   config: { welcomeChannel: 'c-general', welcomeColor: 'Red' },
   personalidad: {},
   cumpleanos: { canal: null, usuarios: { u9: { dia: 1, mes: 1, anio: 2000, tag: 'nueve' } } },
+  grupos: { guilds: {} },
+  levels: { niveles: [], usuarios: { u1: { mensajes: 3 } } },
+  autorespuestas: { hola: 'hey' },
 };
 store.get = (nombre) => JSON.parse(JSON.stringify(almacenes[nombre] ?? {}));
 store.set = (nombre, datos) => { almacenes[nombre] = JSON.parse(JSON.stringify(datos)); };
@@ -139,6 +142,24 @@ test('PUT de IA guarda en su propio almacén', async () => {
   assert.strictEqual(r.status, 200);
   assert.strictEqual(almacenes.personalidad.nombre, 'Sombra');
   assert.strictEqual(almacenes.config.nombre, undefined, 'no toca config');
+});
+
+test('PUT de las secciones con listas guarda en su almacén y valida por celda', async () => {
+  const put = (seccion, cuerpo) => pedir(`/api/config/${seccion}`, { metodo: 'PUT', usuario: 'u-admin', cuerpo });
+  assert.strictEqual((await put('grupos', { canal: 'c-general', juegos: [{ nombre: 'Fortnite', rolId: 'r-miembro' }] })).status, 200);
+  assert.deepStrictEqual(almacenes.grupos.guilds.g1.juegos, [{ nombre: 'Fortnite', rolId: 'r-miembro' }]);
+  assert.strictEqual(almacenes.grupos.guilds.g1.config.canalAnuncios, 'c-general');
+
+  const repetido = await put('grupos', { juegos: [{ nombre: 'A', rolId: 'r-miembro' }, { nombre: 'a', rolId: 'r-miembro' }] });
+  assert.strictEqual(repetido.status, 400);
+  assert.ok((await repetido.json()).errores['juegos.1.nombre']);
+
+  assert.strictEqual((await put('niveles', { canal: null, niveles: [{ nivel: 1, nombre: 'Novato', rolId: 'r-miembro', horasVoz: 1, mensajes: 0 }], especiales: [] })).status, 200);
+  assert.strictEqual(almacenes.levels.niveles[0].rol_id, 'r-miembro');
+  assert.deepStrictEqual(almacenes.levels.usuarios, { u1: { mensajes: 3 } });
+
+  assert.strictEqual((await put('autorespuestas', { respuestas: [{ disparador: 'gg', respuesta: 'bien jugado' }] })).status, 200);
+  assert.deepStrictEqual(almacenes.autorespuestas, { gg: 'bien jugado' });
 });
 
 test('acciones: borrar cumpleaños y restablecer IA', async () => {

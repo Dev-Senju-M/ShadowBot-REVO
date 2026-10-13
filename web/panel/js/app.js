@@ -10,6 +10,9 @@ const Panel = (() => {
     { ruta: 'novedades', nombre: 'Novedades', icono: 'novedades', grupo: 'Comunidad', modulo: () => SeccionNovedades },
     { ruta: 'fortnite', nombre: 'Tienda Fortnite', icono: 'tienda', grupo: 'Comunidad', modulo: () => SeccionFortnite },
     { ruta: 'ia', nombre: 'IA', icono: 'ia', grupo: 'Comunidad', modulo: () => SeccionIa },
+    { ruta: 'grupos', nombre: 'Buscar grupo', icono: 'grupos', grupo: 'Comunidad', modulo: () => SeccionGrupos },
+    { ruta: 'niveles', nombre: 'Niveles', icono: 'niveles', grupo: 'Comunidad', modulo: () => SeccionNiveles },
+    { ruta: 'autorespuestas', nombre: 'Auto-respuestas', icono: 'chat', grupo: 'Comunidad', modulo: () => SeccionAutorespuestas },
   ];
   let rutaActual = null;
   let sucio = false;

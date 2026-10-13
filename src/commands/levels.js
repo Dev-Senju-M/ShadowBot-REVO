@@ -115,9 +115,11 @@ module.exports = {
 
     // — LIST —
     } else if (sub === 'list') {
-      if (db.niveles.length === 0) return interaction.reply({ content: '❌ No levels configured yet.', flags: MessageFlags.Ephemeral });
+      // Los logros especiales no tienen número de nivel
+      const conNumero = db.niveles.filter(n => typeof n.nivel === 'number');
+      if (conNumero.length === 0) return interaction.reply({ content: '❌ No levels configured yet.', flags: MessageFlags.Ephemeral });
 
-      const sorted = db.niveles.sort((a, b) => a.nivel - b.nivel);
+      const sorted = conNumero.sort((a, b) => a.nivel - b.nivel);
       const lista = sorted.map(n =>
         `**Lvl ${n.nivel} — ${n.nombre}**\n<@&${n.rol_id}> | 🎙️ ${n.horas_voz}h de voz | 💬 ${n.mensajes} mensajes`
       ).join('\n\n');
@@ -222,7 +224,7 @@ module.exports = {
       const hVoz = userData.minutos_voz / 60;
       const msgs = userData.mensajes;
       const elegible = (db.niveles || [])
-        .filter(n => hVoz >= n.horas_voz && msgs >= n.mensajes)
+        .filter(n => typeof n.nivel === 'number' && hVoz >= n.horas_voz && msgs >= n.mensajes)
         .sort((a, b) => b.nivel - a.nivel)[0];
       if (elegible && elegible.nivel > (userData.nivel || 0)) {
         db.usuarios[target.id].nivel = elegible.nivel;
