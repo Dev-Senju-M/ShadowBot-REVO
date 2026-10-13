@@ -9,6 +9,7 @@ data/*.json
 bot.log
 *.log
 yt-cookies.txt
+web/config.js
 
 # Configuración local de editores / herramientas
 .idea/

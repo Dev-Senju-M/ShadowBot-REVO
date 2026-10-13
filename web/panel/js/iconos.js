@@ -1,4 +1,4 @@
-// Iconos propios del panel (SVG 24x24). Los de sección son kawaii con contorno
+// Iconos propios del panel y de la landing (SVG 24x24). Los de sección son kawaii con contorno
 // de tinta (clases .k y .k2 en styles.css); los de formulario son de línea.
 const Iconos = (() => {
   const KAWAII = {
@@ -12,6 +12,15 @@ const Iconos = (() => {
     pastel: '<rect class="k" x="4" y="11" width="16" height="9" rx="2"/><path class="k2" d="M4 14.5q2 1.6 4 0t4 0 4 0 4 0V13a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/><path class="k" d="M11 6.2h2V11h-2z"/><path class="llama" d="M12 2.4c1 1.2 1.3 2.2 0 3.3-1.3-1.1-1-2.1 0-3.3z"/><circle cx="9.5" cy="16.8" r=".9" class="tinta"/><circle cx="14.5" cy="16.8" r=".9" class="tinta"/><path class="trazo-tinta" d="M11.2 18q.8.7 1.6 0"/>',
     chat: '<path class="k" d="M4.5 5.5h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H11l-4.5 3.5v-3.5h-2a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><circle cx="9.5" cy="11" r="1" class="tinta"/><circle cx="14.5" cy="11" r="1" class="tinta"/><path class="trazo-tinta" d="M10.8 13.4q1.2 1.1 2.4 0"/>',
     tienda: '<path class="k" d="M5 8h14l-1.2 12H6.2z"/><path class="trazo-tinta" d="M9 10V7a3 3 0 0 1 6 0v3"/><circle cx="10" cy="14" r="1" class="tinta"/><circle cx="14" cy="14" r="1" class="tinta"/><path class="trazo-tinta" d="M11 16q1 .9 2 0"/><circle cx="17" cy="10.8" r=".9" class="acento"/>',
+    musica: '<path class="k2" d="M9 6.2 19 4v3.2L9 9.4z"/><path class="trazo-tinta" d="M9 6.5V17M19 4.5V15"/><ellipse class="k" cx="6.8" cy="17.2" rx="2.8" ry="2.3"/><ellipse class="k" cx="16.8" cy="15.2" rx="2.8" ry="2.3"/><circle cx="6" cy="17" r=".6" class="tinta"/><circle cx="7.6" cy="17" r=".6" class="tinta"/>',
+    moderacion: '<path class="k" d="M11 10.8l2-1.4 6.6 9.4-2 1.4z"/><path class="k2" d="M3.6 9.4l9.2-5.6 2.8 4.6-9.2 5.6z"/><circle cx="8.2" cy="8.6" r=".8" class="tinta"/><circle cx="10.6" cy="7.2" r=".8" class="tinta"/>',
+    twitch: '<path class="k2" d="M5 4h14v10l-3.5 3.5H12L9.5 20v-2.5H5z"/><path class="trazo-blanco" d="M11 8v4M15 8v4"/>',
+    torneo: '<path class="trazo-tinta" d="M7.5 5.5H5a2.6 2.6 0 0 0 2.8 3.4M16.5 5.5H19a2.6 2.6 0 0 1-2.8 3.4"/><path class="k" d="M10.8 13h2.4v4h-2.4zM8 17h8v3H8z"/><path class="k2" d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z"/><circle cx="10.6" cy="7.6" r=".8" class="tinta"/><circle cx="13.4" cy="7.6" r=".8" class="tinta"/><path class="trazo-tinta" d="M11.2 9.6q.8.7 1.6 0"/>',
+    monedas: '<ellipse class="k2" cx="15" cy="15" rx="5.5" ry="5"/><circle class="k" cx="9.5" cy="10" r="6"/><circle cx="7.7" cy="9.4" r=".9" class="tinta"/><circle cx="11.3" cy="9.4" r=".9" class="tinta"/><path class="trazo-tinta" d="M8.5 11.6q1 .9 2 0"/>',
+    sala: '<path class="k" d="M4.5 9.5H8l5-4v13l-5-4H4.5z"/><path class="trazo-acento" d="M16 9.2a4 4 0 0 1 0 5.6M18.4 7a7 7 0 0 1 0 10"/><circle cx="8.6" cy="11.6" r=".7" class="tinta"/><circle cx="10.8" cy="11.6" r=".7" class="tinta"/>',
+    verificacion: '<circle class="k2" cx="12" cy="12" r="8"/><path class="trazo-blanco" d="M8.2 12.3l2.6 2.6 5-5.4"/>',
+    estadisticas: '<rect class="k" x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path class="trazo-acento" d="M6.5 15.5l3.5-4 3 2.5 4.5-6"/><circle cx="7.6" cy="8" r=".8" class="tinta"/><circle cx="10.2" cy="8" r=".8" class="tinta"/>',
+    acertijo: '<circle class="k2" cx="12" cy="12" r="8.5"/><path class="trazo-blanco" d="M9.6 9.6a2.5 2.5 0 1 1 3.6 2.3c-.8.4-1.2 1-1.2 1.9"/><circle cx="12" cy="16.6" r=".9" class="ojo-blanco"/>',
   };
   const LINEA = {
     canal: '<path d="M9.5 4 7.5 20M16.5 4l-2 16M4.5 9h16M3.5 15h16"/>',
@@ -30,5 +39,8 @@ const Iconos = (() => {
     return `<svg class="icono icono-linea ${clase}" viewBox="0 0 24 24" aria-hidden="true">${LINEA[nombre] || ''}</svg>`;
   }
 
-  return { svg };
+  const existe = (nombre) => Object.hasOwn(KAWAII, nombre) || Object.hasOwn(LINEA, nombre);
+
+  return { svg, existe };
 })();
+if (typeof module !== 'undefined' && module.exports) module.exports = Iconos;

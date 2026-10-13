@@ -1,4 +1,4 @@
-// Servidor web del bot: /health (lo usa la landing de Netlify) y, si está
+// Servidor web del bot: /health, la landing pública en / y, si está
 // configurado, el panel con su login y su API.
 const path = require('path');
 const express = require('express');
@@ -6,8 +6,11 @@ const { encabezados, limitePorIp } = require('./seguridad');
 const { COOKIE_SESION, rutasAuth, obtenerUsuarioDiscord } = require('./auth');
 const { rutasApi } = require('./api');
 const { leerValor, leerCookie } = require('./sesion');
+const { temporadaActual } = require('./temporadas');
 
-const DIR_PANEL = path.join(__dirname, '..', '..', 'web', 'panel');
+const DIR_WEB = path.join(__dirname, '..', '..', 'web');
+const DIR_PANEL = path.join(DIR_WEB, 'panel');
+const PAGINAS_PANEL = ['/panel', '/panel/', '/panel/index.html'];
 
 // Configuración del panel desde el entorno; { faltan } si falta algo
 function configPanel(env = process.env) {
@@ -37,17 +40,32 @@ function crearApp(client, { cfg } = {}) {
     });
   });
 
+  app.use(encabezados);
+
+  // Landing pública: solo estos archivos de web/ (build.js y lo demás no se sirven)
+  app.get(['/', '/index.html'], (req, res) => res.sendFile(path.join(DIR_WEB, 'index.html')));
+  app.get('/landing.css', (req, res) => res.sendFile(path.join(DIR_WEB, 'landing.css')));
+  app.use('/js', express.static(path.join(DIR_WEB, 'js'), { index: false }));
+  // En Netlify este archivo lo genera web/build.js; aquí lo responde el propio bot
+  app.get('/config.js', (req, res) => {
+    const config = { statusUrl: '/health', panelUrl: cfg ? '/panel/' : '', tema: temporadaActual() };
+    res.setHeader('Cache-Control', 'no-store');
+    res.type('application/javascript').send(`window.SHADOWBOT = ${JSON.stringify(config)};\n`);
+  });
+
   if (cfg) {
-    app.use(encabezados);
     app.use('/auth', limitePorIp({ maximo: 10 }), rutasAuth(client, cfg));
     app.use('/api', limitePorIp({ maximo: 120 }), rutasApi(client, cfg));
-    app.get(['/panel', '/panel/', '/panel/index.html'], (req, res) => {
+    app.get(PAGINAS_PANEL, (req, res) => {
       if (!leerValor(leerCookie(req, COOKIE_SESION), cfg.secreto)) return res.redirect('/panel/login.html');
       res.sendFile(path.join(DIR_PANEL, 'index.html'));
     });
-    app.use('/panel', express.static(DIR_PANEL, { index: false }));
-    app.get('/', (req, res) => res.redirect('/panel/'));
+  } else {
+    // Sin panel no hay dónde iniciar sesión: sus páginas llevan a la landing
+    app.get([...PAGINAS_PANEL, '/panel/login.html'], (req, res) => res.redirect('/'));
   }
+  // Los estáticos del panel se sirven siempre: la landing usa su tema, iconos y mascota
+  app.use('/panel', express.static(DIR_PANEL, { index: false }));
 
   app.use((req, res) => res.status(404).json({}));
   // eslint-disable-next-line no-unused-vars

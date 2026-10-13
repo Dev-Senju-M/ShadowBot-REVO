@@ -1,12 +1,21 @@
+// Build de la landing para Netlify: genera config.js con las URLs del bot.
+// No modifica index.html. Variables: STATUS_URL (URL completa de /health del bot)
+// y PANEL_URL (origen del bot, p. ej. https://mi-bot.up.railway.app).
 const fs = require('fs');
+const path = require('path');
 
-const STATUS_URL = process.env.STATUS_URL || '';
-
-if (!STATUS_URL) {
-  console.warn('⚠  STATUS_URL no definida — el badge de estado mostrará "No disponible"');
+function generarConfig(env = process.env) {
+  const statusUrl = (env.STATUS_URL || '').trim();
+  const origen = (env.PANEL_URL || '').trim().replace(/\/+$/, '');
+  const config = { statusUrl, panelUrl: origen ? `${origen}/panel/` : '' };
+  return `// Generado por build.js. No editar.\nwindow.SHADOWBOT = ${JSON.stringify(config)};\n`;
 }
 
-const html = fs.readFileSync('index.html', 'utf8').replace(/__STATUS_URL__/g, STATUS_URL);
-fs.writeFileSync('index.html', html);
+if (require.main === module) {
+  if (!process.env.STATUS_URL) console.warn('⚠  STATUS_URL no definida: el estado del bot mostrará "No disponible"');
+  if (!process.env.PANEL_URL) console.warn('⚠  PANEL_URL no definida: no se mostrará el botón "Abrir panel"');
+  fs.writeFileSync(path.join(__dirname, 'config.js'), generarConfig());
+  console.log('✅ config.js generado');
+}
 
-console.log('✅ Build completo. STATUS_URL:', STATUS_URL || '(vacía)');
+module.exports = { generarConfig };

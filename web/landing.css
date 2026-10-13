@@ -1,0 +1,117 @@
+/* Landing pública de ShadowBot. Colores, botones, iconos, mascota y temas
+   vienen de panel/tema.css; aquí solo va la maquetación de esta página. */
+
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body.landing { overflow-x: hidden; }
+code { padding: 1px 6px; border-radius: 6px; background: var(--campo); color: var(--lila); font: 600 .92em ui-monospace, Consolas, monospace; }
+
+/* ── Barra superior ── */
+.barra {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 14px;
+  min-height: 62px; padding: 0 clamp(14px, 4vw, 40px);
+  background: rgba(10, 4, 20, .88);
+  backdrop-filter: blur(6px);
+  border-bottom: 2px solid var(--borde);
+}
+.barra-marca { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-size: 22px; text-shadow: 0 0 12px var(--brillo), 2px 2px 0 var(--tinta); }
+.barra-marca img { border-radius: 10px; border: 2px solid var(--tinta); }
+.barra-enlaces { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+.barra-enlaces a:not(.boton) { color: var(--texto-2); text-decoration: none; font-weight: 600; }
+.barra-enlaces a:not(.boton):hover { color: #fff; }
+.estado { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px; border: 2px solid var(--borde); border-radius: 999px; background: var(--campo); color: var(--texto-2); font-size: 13px; font-weight: 600; }
+.estado-punto { width: 9px; height: 9px; border-radius: 50%; background: var(--texto-3); }
+.estado[data-estado="online"] .estado-punto { background: #3ddc84; box-shadow: 0 0 8px #3ddc84; }
+.estado[data-estado="maintenance"] .estado-punto, .estado[data-estado="starting"] .estado-punto { background: #ffc857; box-shadow: 0 0 8px #ffc857; }
+.estado[data-estado="offline"] .estado-punto { background: var(--error); }
+
+/* ── Portada ── */
+.portada {
+  display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 560px); justify-content: center; align-items: center;
+  gap: clamp(20px, 5vw, 60px);
+  min-height: calc(100vh - 62px); padding: 40px clamp(16px, 4vw, 40px);
+}
+.portada-mascota { width: 100%; filter: drop-shadow(0 0 30px var(--brillo)); }
+.portada-sobre { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ojo); }
+.portada-titulo { margin: 0; font-size: clamp(52px, 9vw, 96px); font-weight: 400; line-height: 1.05; color: #fff; text-shadow: 4px 4px 0 var(--tinta), 0 0 30px var(--brillo); }
+.portada-frase { margin: 14px 0 24px; font-size: 18px; color: var(--texto-2); }
+.portada-botones { display: flex; flex-wrap: wrap; gap: 12px; }
+.boton-claro { background: #fff; color: var(--violeta); }
+.portada-numeros { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 26px 0 0; padding: 0; list-style: none; color: var(--texto-3); }
+.portada-numeros strong { margin-right: 4px; font: 400 24px 'Permanent Marker', cursive; color: #fff; text-shadow: 2px 2px 0 var(--tinta); }
+
+/* ── Secciones ── */
+.seccion { max-width: 1120px; margin: 0 auto; padding: 56px clamp(16px, 4vw, 40px); }
+.grupo-titulo { margin: 28px 0 12px; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ojo); }
+.funciones { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.funcion { transition: transform .15s, border-color .15s, box-shadow .15s; }
+.funcion:hover { transform: translate(-2px, -2px); border-color: var(--acento); box-shadow: 6px 6px 0 var(--tinta), 0 0 18px var(--brillo); }
+.funcion:hover .icono { animation: bamboleo .6s ease-in-out; }
+/* Insignia clara: los contornos de tinta de los iconos no se ven sobre fondo oscuro */
+.funcion-icono { display: grid; place-items: center; width: 60px; height: 60px; margin-bottom: 12px; background: #e6d9ff; border: 3px solid var(--tinta); border-radius: 16px; box-shadow: 3px 3px 0 var(--acento); }
+.funcion-icono .icono { width: 42px; height: 42px; }
+.funcion h3 { margin: 0 0 6px; font-size: 17px; color: #fff; }
+.funcion p { margin: 0; color: var(--texto-2); }
+
+/* ── Bloque del panel ── */
+.panel-bloque { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: center; padding: clamp(18px, 4vw, 36px); border-color: var(--acento); box-shadow: 6px 6px 0 var(--tinta), 0 0 30px var(--brillo); }
+.panel-nota { margin: 10px 0 18px; font-size: 13px; color: var(--texto-3); }
+.miniatura { border: 3px solid var(--tinta); border-radius: 14px; background: var(--noche); box-shadow: 4px 4px 0 var(--tinta); overflow: hidden; }
+.miniatura span { display: block; height: 9px; border-radius: 5px; background: var(--borde); }
+.mini-barra { display: flex; gap: 6px; padding: 10px; background: var(--violeta-2); border-bottom: 2px solid var(--borde); }
+.mini-barra span { width: 9px; border-radius: 50%; }
+.mini-cuerpo { display: grid; grid-template-columns: 32% 1fr; }
+.mini-lado { display: grid; gap: 9px; align-content: start; padding: 14px 10px; background: var(--violeta-2); border-right: 2px solid var(--borde); }
+.mini-lado .mini-activo { background: var(--acento); box-shadow: 0 0 10px var(--brillo); }
+.mini-contenido { display: grid; gap: 11px; align-content: start; padding: 16px; }
+.mini-contenido .mini-titulo { width: 45%; height: 13px; background: var(--lila); }
+.mini-contenido .mini-corto { width: 60%; }
+.mini-contenido .mini-boton { width: 34%; height: 18px; margin-top: 8px; border: 2px solid var(--tinta); background: var(--acento); }
+
+/* ── Comandos ── */
+.herramientas { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+.herramientas .pestanas { margin: 0; }
+.pestana-cuenta { opacity: .75; font-weight: 500; }
+.buscador { flex: 1 1 220px; max-width: 360px; padding: 10px 14px; background: var(--campo); color: var(--texto); border: 2px solid var(--borde); border-radius: 12px; font: inherit; }
+.buscador:focus { border-color: var(--acento); outline: none; box-shadow: 0 0 0 3px var(--brillo); }
+.con-js .lista-titulo { display: none; }
+.lista-titulo { margin: 26px 0 0; font: 400 22px 'Permanent Marker', cursive; color: #fff; }
+.categoria h4 { margin: 24px 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ojo); }
+.categoria ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.comando { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 10px 14px; border: 2px solid var(--borde); border-radius: 12px; background: rgba(10, 4, 20, .7); }
+.comando code { background: var(--violeta); color: #fff; }
+.comando .alias { font-size: 12px; color: var(--texto-3); }
+.comando-texto { flex: 1 1 100%; color: var(--texto-2); }
+.sin-resultados { margin: 30px auto; text-align: center; color: var(--texto-2); }
+.sin-resultados .mascota { width: 130px; }
+
+/* ── Pie ── */
+.pie { margin-top: 30px; padding: 30px clamp(16px, 4vw, 40px) 40px; text-align: center; border-top: 2px solid var(--borde); background: rgba(10, 4, 20, .7); }
+.pie-marca { margin: 0 0 10px; font-size: 24px; color: #fff; text-shadow: 2px 2px 0 var(--tinta); }
+.pie-enlaces { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; margin-bottom: 12px; }
+.pie-enlaces a { text-decoration: none; font-weight: 600; }
+.pie-enlaces a:hover { color: #fff; }
+.pie p { margin: 0; font-size: 13px; }
+
+/* ── Móvil ── */
+@media (max-width: 767px) {
+  .barra .estado { margin-left: auto; }
+  .barra { flex-wrap: wrap; }
+  .barra-enlaces { flex-basis: 100%; padding-bottom: 10px; }
+  .con-js .boton-menu { display: inline-flex; }
+  .con-js .barra-enlaces {
+    position: absolute; top: 100%; left: 0; right: 0; margin: 0;
+    flex-basis: auto; flex-direction: column; align-items: stretch; gap: 4px; padding: 12px 16px 16px;
+    background: #0f0620; border-bottom: 2px solid var(--borde); box-shadow: 0 12px 30px rgba(0, 0, 0, .6);
+  }
+  .con-js .barra-enlaces { display: none; }
+  .con-js .menu-abierto .barra-enlaces { display: flex; }
+  .barra-enlaces a:not(.boton) { padding: 10px 4px; }
+  .portada { grid-template-columns: 1fr; text-align: center; min-height: 0; padding-top: 28px; }
+  .portada-mascota { width: min(220px, 60%); margin: 0 auto; }
+  .portada-botones, .portada-numeros { justify-content: center; }
+  .seccion { padding-top: 40px; padding-bottom: 40px; }
+  .panel-bloque { grid-template-columns: 1fr; }
+  .categoria ul { grid-template-columns: 1fr; }
+  .buscador { max-width: none; }
+}
