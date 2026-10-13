@@ -7,10 +7,11 @@ const { sendSecurityLog } = require('../utils/modlog');
 const { leerValor, leerCookie } = require('./sesion');
 const { esAdmin, servidorPanel, miembroDe } = require('./permisos');
 const { temporadaActual } = require('./temporadas');
+const { ErrorAccion } = require('./secciones/comun');
 
-const SECCIONES = new Map([
-  ['bienvenida', require('./secciones/bienvenida')],
-]);
+// Cada sección declara sus almacenes, leer/validar/guardar y sus acciones
+const SECCIONES = new Map(['bienvenida', 'logs', 'novedades', 'fortnite', 'cumpleanos', 'ia']
+  .map(nombre => [nombre, require(`./secciones/${nombre}`)]));
 const METODOS_LECTURA = ['GET', 'HEAD'];
 
 function avatarUrl(id, avatar) {
@@ -32,18 +33,32 @@ function diferencias(antes, despues) {
     .map(([campo, valor]) => ({ campo, antes: previo.get(campo), despues: valor }));
 }
 
-async function registrarCambio(guild, usuarioId, seccion, antes, despues) {
-  const cambios = diferencias(antes, despues);
-  if (!cambios.length) return;
-  const texto = (v) => (v === null || v === undefined ? '—' : String(v).slice(0, 80));
+const recortar = (v) => (v === null || v === undefined ? '—' : String(v).slice(0, 80));
+
+// Datos de los almacenes que declara la sección
+function cargar(seccion) {
+  return Object.fromEntries(seccion.almacenes.map(nombre => [nombre, store.get(nombre)]));
+}
+
+// Guarda solo los almacenes que la sección declaró
+function aplicar(seccion, cambios = {}) {
+  for (const [nombre, valor] of Object.entries(cambios)) {
+    if (!seccion.almacenes.includes(nombre)) throw new Error(`La sección ${seccion.titulo} intentó escribir en "${nombre}"`);
+    store.set(nombre, valor);
+  }
+}
+
+async function registrar(guild, usuarioId, titulo, campos) {
+  if (!campos.length) return;
   const embed = new EmbedBuilder()
     .setColor('#8B3DFF')
-    .setTitle(`📝 ${seccion.titulo}: cambios desde el panel`)
-    .setDescription(`Por <@${usuarioId}>`)
-    .addFields(cambios.slice(0, 20).map(c => ({ name: c.campo, value: `${texto(c.antes)} → ${texto(c.despues)}` })))
+    .setTitle(`📝 ${titulo}`)
+    .setDescription(`Por <@${usuarioId}> desde el panel`)
+    .addFields(campos.slice(0, 20))
     .setTimestamp();
   await sendSecurityLog(guild, embed);
 }
+const alFallarRegistro = (err) => console.error('[panel] No se pudo registrar el cambio:', err.message);
 
 function rutasApi(client, cfg) {
   const router = express.Router();
@@ -71,6 +86,13 @@ function rutasApi(client, cfg) {
     }
   });
 
+  const contexto = (req) => ({ guild: req.guild, client });
+  function buscarSeccion(req, res) {
+    const seccion = SECCIONES.get(req.params.seccion);
+    if (!seccion) res.status(404).json({ error: 'Sección desconocida.' });
+    return seccion;
+  }
+
   router.get('/me', (req, res) => {
     const { sesion, guild } = req;
     res.json({
@@ -96,23 +118,43 @@ function rutasApi(client, cfg) {
   });
 
   router.get('/config/:seccion', (req, res) => {
-    const seccion = SECCIONES.get(req.params.seccion);
-    if (!seccion) return res.status(404).json({ error: 'Sección desconocida.' });
-    res.json(seccion.leer(store.get('config')));
+    const seccion = buscarSeccion(req, res);
+    if (!seccion) return;
+    res.json(seccion.leer(cargar(seccion), contexto(req)));
   });
 
   router.put('/config/:seccion', (req, res) => {
-    const seccion = SECCIONES.get(req.params.seccion);
-    if (!seccion) return res.status(404).json({ error: 'Sección desconocida.' });
-    const { datos, errores } = seccion.validar(req.body, req.guild);
+    const seccion = buscarSeccion(req, res);
+    if (!seccion) return;
+    const ctx = contexto(req);
+    const { valores, errores } = seccion.validar(req.body, ctx);
     if (Object.keys(errores).length) return res.status(400).json({ errores });
-    const configAntes = store.get('config');
-    const configNuevo = seccion.guardar(datos, configAntes);
-    store.set('config', configNuevo);
-    const despues = seccion.leer(configNuevo);
-    registrarCambio(req.guild, req.sesion.id, seccion, seccion.leer(configAntes), despues)
-      .catch(err => console.error('[panel] No se pudo registrar el cambio:', err.message));
+    const antes = cargar(seccion);
+    aplicar(seccion, seccion.guardar(valores, antes));
+    const despues = seccion.leer(cargar(seccion), ctx);
+    const campos = diferencias(seccion.leer(antes, ctx), despues)
+      .map(c => ({ name: c.campo, value: `${recortar(c.antes)} → ${recortar(c.despues)}` }));
+    registrar(req.guild, req.sesion.id, `${seccion.titulo}: cambios`, campos).catch(alFallarRegistro);
     res.json(despues);
+  });
+
+  router.post('/config/:seccion/:accion', async (req, res, next) => {
+    const seccion = buscarSeccion(req, res);
+    if (!seccion) return;
+    const acciones = seccion.acciones ?? {};
+    const accion = Object.hasOwn(acciones, req.params.accion) ? acciones[req.params.accion] : null;
+    if (!accion) return res.status(404).json({ error: 'Acción desconocida.' });
+    const ctx = contexto(req);
+    try {
+      const resultado = await accion.ejecutar(req.body ?? {}, ctx, cargar(seccion));
+      aplicar(seccion, resultado.cambios);
+      registrar(req.guild, req.sesion.id, `${seccion.titulo}: ${accion.titulo}`, [{ name: 'Resultado', value: String(resultado.mensaje).slice(0, 1000) }])
+        .catch(alFallarRegistro);
+      res.json({ mensaje: resultado.mensaje, seccion: seccion.leer(cargar(seccion), ctx) });
+    } catch (err) {
+      if (err instanceof ErrorAccion) return res.status(err.estado).json({ error: err.message });
+      next(err);
+    }
   });
 
   return router;

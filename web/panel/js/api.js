@@ -34,6 +34,7 @@ const Api = (() => {
     ErrorApi,
     get: (ruta) => pedir('GET', ruta),
     put: (ruta, datos) => pedir('PUT', ruta, datos),
+    post: (ruta, datos) => pedir('POST', ruta, datos ?? {}),
     cerrarSesion: () => fetch('/auth/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-ShadowBot-Panel': '1' } }),
   };
 })();

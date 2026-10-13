@@ -16,6 +16,10 @@ const SeccionInicio = (() => {
     const icono = servidor.iconoUrl
       ? `<img src="${esc(servidor.iconoUrl)}" alt="">`
       : `<span class="servidor-inicial">${esc(servidor.nombre.charAt(0))}</span>`;
+    const accesos = Panel.secciones
+      .filter(s => s.ruta !== 'inicio')
+      .map(s => `<a class="acceso" href="#/${s.ruta}">${Iconos.svg(s.icono, 'icono-seccion')}<span>${esc(s.nombre)}</span></a>`)
+      .join('');
     contenedor.innerHTML = `
       <header class="cabecera">
         <h1 class="titulo">¡Hola, ${esc(usuario.nombre)}!</h1>
@@ -38,9 +42,9 @@ const SeccionInicio = (() => {
           <h2 class="tarjeta-titulo">Servidor</h2>
           <div class="servidor">${icono}<div><strong>${esc(servidor.nombre)}</strong><br><span class="texto-suave">${servidor.miembros} miembros</span></div></div>
         </section>
-        <section class="tarjeta">
+        <section class="tarjeta inicio-accesos">
           <h2 class="tarjeta-titulo">Secciones</h2>
-          <a class="acceso" href="#/bienvenida">${Iconos.svg('bienvenida', 'icono-seccion')}<span>Bienvenida, despedida y verificación</span></a>
+          <div class="accesos">${accesos}</div>
         </section>
       </div>`;
     Mascota.pintar(contenedor);

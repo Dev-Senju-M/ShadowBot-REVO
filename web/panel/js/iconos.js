@@ -9,6 +9,8 @@ const Iconos = (() => {
     niveles: '<rect class="k" x="4.5" y="13" width="4" height="7" rx="1.2"/><rect class="k" x="10" y="9.5" width="4" height="10.5" rx="1.2"/><rect class="k2" x="15.5" y="5" width="4" height="15" rx="1.2"/><circle cx="16.8" cy="9.3" r=".8" class="tinta"/><circle cx="18.2" cy="9.3" r=".8" class="tinta"/><path class="k" d="M17.5 1.8l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z"/>',
     novedades: '<path class="k" d="M6.5 4.5h11a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H7A2.5 2.5 0 0 1 4.5 17.5v-11a2 2 0 0 1 2-2z"/><circle cx="9.8" cy="10.6" r="1" class="tinta"/><circle cx="14.2" cy="10.6" r="1" class="tinta"/><path class="trazo-tinta" d="M10.7 12.8q1.3 1.3 2.6 0"/><path class="trazo-acento" d="M8 16.6h8"/>',
     ia: '<circle class="k2" cx="12" cy="11" r="7"/><path class="k" d="M7.5 20.5h9l-1.5-3h-6z"/><circle cx="9.7" cy="10.5" r="1.1" class="ojo-blanco"/><circle cx="14.3" cy="10.5" r="1.1" class="ojo-blanco"/><path class="trazo-blanco" d="M8.6 7.5a4.5 4.5 0 0 1 2.4-2"/>',
+    pastel: '<rect class="k" x="4" y="11" width="16" height="9" rx="2"/><path class="k2" d="M4 14.5q2 1.6 4 0t4 0 4 0 4 0V13a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/><path class="k" d="M11 6.2h2V11h-2z"/><path class="llama" d="M12 2.4c1 1.2 1.3 2.2 0 3.3-1.3-1.1-1-2.1 0-3.3z"/><circle cx="9.5" cy="16.8" r=".9" class="tinta"/><circle cx="14.5" cy="16.8" r=".9" class="tinta"/><path class="trazo-tinta" d="M11.2 18q.8.7 1.6 0"/>',
+    tienda: '<path class="k" d="M5 8h14l-1.2 12H6.2z"/><path class="trazo-tinta" d="M9 10V7a3 3 0 0 1 6 0v3"/><circle cx="10" cy="14" r="1" class="tinta"/><circle cx="14" cy="14" r="1" class="tinta"/><path class="trazo-tinta" d="M11 16q1 .9 2 0"/><circle cx="17" cy="10.8" r=".9" class="acento"/>',
   };
   const LINEA = {
     canal: '<path d="M9.5 4 7.5 20M16.5 4l-2 16M4.5 9h16M3.5 15h16"/>',
@@ -16,6 +18,7 @@ const Iconos = (() => {
     color: '<path d="M12 3c3.2 4.1 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 2.8-6.9 6-11z"/><path d="M9.5 15a2.5 2.5 0 0 0 2.5 2.5"/>',
     guardar: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
     descartar: '<path d="M9 14.5 4 9.5l5-5M4 9.5h10.5a5 5 0 0 1 0 10H12"/>',
+    borrar: '<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/>',
     salir: '<path d="M14.5 4H18a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3.5M10 16l4-4-4-4M14 12H4"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h11"/>',
   };

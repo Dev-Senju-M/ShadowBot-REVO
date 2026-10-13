@@ -3,8 +3,13 @@ const Panel = (() => {
   const esc = Formato.escapar;
   const $ = (selector) => document.querySelector(selector);
   const SECCIONES = [
-    { ruta: 'inicio', nombre: 'Inicio', icono: 'inicio', modulo: () => SeccionInicio },
-    { ruta: 'bienvenida', nombre: 'Bienvenida', icono: 'bienvenida', modulo: () => SeccionBienvenida },
+    { ruta: 'inicio', nombre: 'Inicio', icono: 'inicio', grupo: null, modulo: () => SeccionInicio },
+    { ruta: 'bienvenida', nombre: 'Bienvenida', icono: 'bienvenida', grupo: 'Servidor', modulo: () => SeccionBienvenida },
+    { ruta: 'logs', nombre: 'Logs', icono: 'logs', grupo: 'Servidor', modulo: () => SeccionLogs },
+    { ruta: 'cumpleanos', nombre: 'Cumpleaños', icono: 'pastel', grupo: 'Servidor', modulo: () => SeccionCumpleanos },
+    { ruta: 'novedades', nombre: 'Novedades', icono: 'novedades', grupo: 'Comunidad', modulo: () => SeccionNovedades },
+    { ruta: 'fortnite', nombre: 'Tienda Fortnite', icono: 'tienda', grupo: 'Comunidad', modulo: () => SeccionFortnite },
+    { ruta: 'ia', nombre: 'IA', icono: 'ia', grupo: 'Comunidad', modulo: () => SeccionIa },
   ];
   let rutaActual = null;
   let sucio = false;
@@ -12,7 +17,7 @@ const Panel = (() => {
   let ignorarHash = false;
   let temporizadorAviso = null;
 
-  const panel = { me: null, marcarCambios, aviso, manejarError };
+  const panel = { me: null, secciones: SECCIONES, marcarCambios, aviso, manejarError };
 
   function aplicarTema(tema) {
     document.documentElement.dataset.tema = tema;
@@ -74,9 +79,12 @@ const Panel = (() => {
   }
 
   function pintarBarraLateral() {
-    $('#barra-lateral').innerHTML = '<p class="grupo">Servidor</p>'
-      + SECCIONES.map(s => `<a href="#/${s.ruta}" data-ruta="${s.ruta}">${Iconos.svg(s.icono, 'icono-seccion')}<span>${s.nombre}</span></a>`).join('')
-      + '<p class="proximamente">Más secciones muy pronto ✦</p>';
+    const enlace = (s) => `<a href="#/${s.ruta}" data-ruta="${s.ruta}">${Iconos.svg(s.icono, 'icono-seccion')}<span>${s.nombre}</span></a>`;
+    let html = SECCIONES.filter(s => !s.grupo).map(enlace).join('');
+    for (const grupo of [...new Set(SECCIONES.map(s => s.grupo).filter(Boolean))]) {
+      html += `<p class="grupo">${grupo}</p>` + SECCIONES.filter(s => s.grupo === grupo).map(enlace).join('');
+    }
+    $('#barra-lateral').innerHTML = html;
   }
 
   async function navegar() {
