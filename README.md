@@ -182,9 +182,11 @@ ShadowBot-REVO/
 ├── data/                      # Datos locales (ignorados por git)
 │   └── *.example.json         # Plantillas versionadas sin datos reales
 ├── web/
-│   ├── index.html             # Landing pública (Netlify)
-│   ├── build.js
-│   └── panel/                 # Panel web (lo sirve el bot)
+│   ├── index.html             # Landing pública (la sirve el bot en / y Netlify)
+│   ├── landing.css
+│   ├── js/                    # comandos.js (lista de comandos), landing.js, ...
+│   ├── build.js               # Netlify: genera config.js con STATUS_URL y PANEL_URL
+│   └── panel/                 # Panel web (lo sirve el bot); tema.css es compartido
 ├── img/                       # Imágenes usadas por el bot
 ├── patches/                   # Parches de dependencias (patch-package)
 ├── test/                      # Tests (npm test)
@@ -309,6 +311,18 @@ El bot sirve un panel en `PANEL_URL/panel` para configurar el servidor sin escri
 4. En *Ajustes del servidor → Roles*, sube el rol del bot por encima de los roles que quieras asignar desde el panel; si no, el panel los mostrará como no asignables.
 
 Sin esas variables el panel queda desactivado (aviso en el log) y el resto del bot funciona igual.
+
+---
+
+## 🌐 Landing pública
+
+El bot sirve la landing en la raíz (`http://localhost:3000/` en local). Muestra las funciones, la lista de comandos y, si el panel está configurado, el botón **Abrir panel**.
+
+- **Al agregar o quitar un comando** hay que actualizar `web/js/comandos.js` y `web/index.html`. `npm test` falla si la landing no coincide con los comandos reales.
+- **Netlify (opcional)**: con `base = "web"`, `node build.js` genera `config.js` a partir de dos variables del sitio:
+  - `STATUS_URL`: URL completa de `/health` del bot.
+  - `PANEL_URL`: origen del bot, sin barra final. Sin ella no se muestra el botón del panel.
+- **Tema**: cambia solo por temporada. Para probar otro en local, `PANEL_TEMA=halloween` o `navidad` en el `.env`.
 
 ---
 
